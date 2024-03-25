@@ -1,0 +1,5 @@
+aux_source_directory(. DIR_SERIAL_LINK_SRCS)
+add_library(serial_link ${DIR_SERIAL_LINK_SRCS})
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(serial_link PUBLIC Threads::Threads)

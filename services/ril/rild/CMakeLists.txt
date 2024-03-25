@@ -1,0 +1,28 @@
+# set target name
+set(TARGET_NAME rild)
+
+include_directories(BEFORE
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/mocks
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+set(SOURCE_FILES rild.c)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
+add_definitions( -DHAVE_ANDROID_OS )
+add_definitions( -DRIL_SHLIB )
+if ((NOT DEFINED RIL_FOR_EXTERNAL_AP) OR (DEFINED TELUX_DEPRIVILEGE_ENABLED))
+    add_definitions(-DRESTRICT_FILE_PERMS)
+endif ((NOT DEFINED RIL_FOR_EXTERNAL_AP) OR (DEFINED TELUX_DEPRIVILEGE_ENABLED))
+
+add_executable (${TARGET_NAME} ${SOURCE_FILES})
+target_link_libraries(${TARGET_NAME} rilutils ril dl mockcutils ${GLIB_LIBRARIES})
+
+install ( TARGETS ${TARGET_NAME}
+          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+

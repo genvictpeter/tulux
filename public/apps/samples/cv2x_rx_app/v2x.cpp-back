@@ -1,0 +1,333 @@
+#include <stdio.h>
+
+#include <assert.h>
+#include <ifaddrs.h>
+
+#include <cstring>
+#include <pthread.h>
+#include <string.h>
+#include <sys/time.h>
+#include <unistd.h>
+
+#include <iostream>
+#include <memory>
+
+#include <telux/cv2x/Cv2xRadio.hpp>
+
+#include "v2x.hpp"
+
+using std::array;
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::promise;
+using std::shared_ptr;
+using telux::common::ErrorCode;
+using telux::common::Status;
+using telux::cv2x::Cv2xFactory;
+using telux::cv2x::Cv2xStatus;
+using telux::cv2x::Cv2xStatusType;
+using telux::cv2x::ICv2xRxSubscription;
+using telux::cv2x::TrafficCategory;
+using telux::cv2x::TrafficIpType;
+using telux::cv2x::ICv2xTxFlow;
+using telux::cv2x::Periodicity;
+using telux::cv2x::Priority;
+using telux::cv2x::SpsFlowInfo;
+
+static constexpr uint16_t RX_PORT_NUM = 9000u;
+static constexpr uint32_t GRx_BUF_LEN = 3000u;
+static constexpr uint32_t NUM_TEST_ITERATIONS = 100u;
+
+static Cv2xStatus gCv2xStatus;
+static promise<ErrorCode> gCallbackPromise;
+static shared_ptr<ICv2xRxSubscription> gRxSub;
+static uint32_t gPacketsReceived = 0u;
+static array<char, GRx_BUF_LEN> gRxBuf;
+
+static constexpr uint32_t SPS_SERVICE_ID = 1u;
+static constexpr uint16_t SPS_SRC_PORT_NUM = 2500u;
+static constexpr uint32_t GTx_BUF_LEN = 64;
+static constexpr int      PRIORITY = 3;
+
+static constexpr char TEST_VERNO_MAGIC = 'Q';
+static constexpr char UEID = 1;
+static shared_ptr<ICv2xTxFlow> gSpsFlow;
+static array<char, GTx_BUF_LEN> gTxBuf;
+
+//add yaxon
+V2xDsmpRegisterInfo *g_cb_info;
+
+// Resets the global callback promise
+static inline void resetCallbackPromise(void) {
+    gCallbackPromise = promise<ErrorCode>();
+}
+
+// Callback function for Cv2xRadioManager->requestCv2xStatus()
+static void cv2xStatusCallback(Cv2xStatus status, ErrorCode error) {
+    if (ErrorCode::SUCCESS == error) {
+        gCv2xStatus = status;
+    }
+    gCallbackPromise.set_value(error);
+}
+
+// Callback function for ICv2xRadio->createTxSpsFlow()
+static void createSpsFlowCallback(shared_ptr<ICv2xTxFlow> txSpsFlow,
+                                  shared_ptr<ICv2xTxFlow> unusedFlow,
+                                  ErrorCode spsError,
+                                  ErrorCode unusedError) {
+    if (ErrorCode::SUCCESS == spsError) {
+        gSpsFlow = txSpsFlow;
+    }
+    gCallbackPromise.set_value(spsError);
+}
+
+// Returns current timestamp
+static uint64_t getCurrentTimestamp(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec * 1000000ull + tv.tv_usec;
+}
+
+// Callback function for Cv2xRadio->createRxSubscription() and Cv2xRadio->closeRxSubscription()
+static void rxSubCallback(shared_ptr<ICv2xRxSubscription> rxSub, ErrorCode error) {
+    if (ErrorCode::SUCCESS == error) {
+        gRxSub = rxSub;
+    }
+    gCallbackPromise.set_value(error);
+}
+
+// Callback for ICv2xRadio->closeTxFlow()
+static void closeFlowCallback(shared_ptr<ICv2xTxFlow> flow, ErrorCode error) {
+    gCallbackPromise.set_value(error);
+}
+
+// Function for reading from Rx socket
+static void sampleRx(void) {
+    V2xDsmpRxData param;
+    unsigned char *dataSave;
+    int sock = gRxSub->getSock();
+
+    // Attempt to read from socket
+    int RecvByte = recv(sock, gRxBuf.data(), gRxBuf.max_size(), 0);
+
+    dataSave = (unsigned char *)malloc(gRxBuf.max_size());
+    memcpy(dataSave, gRxBuf.data(), gRxBuf.max_size());
+    
+    param.dsmpVersion = 0x00;
+    param.aid         = 0x17;
+    param.priority    = 0x00;
+    param.length      = RecvByte;
+    param.data        = dataSave;
+
+    g_cb_info->callback(&param);
+
+    free(dataSave);
+    dataSave = NULL;
+}
+
+int yx_V2xDsmpDataSend(V2xDsmpTxData *txInfo)
+{
+    static uint32_t txCount = 0u;
+
+    int sock = gSpsFlow->getSock();
+    
+    cout << "sampleSpsTx(" << sock << ")" << endl;
+    
+    struct msghdr message = {0};
+    struct iovec iov[1] = {0};
+    struct cmsghdr * cmsghp = NULL;
+    char control[CMSG_SPACE(sizeof(int))];
+
+    // Send data using sendmsg to provide IPV6_TCLASS per packet
+    iov[0].iov_base = txInfo->data;
+    iov[0].iov_len = txInfo->length;
+    message.msg_iov = iov;
+    message.msg_iovlen = 1;
+    message.msg_control = control;
+    message.msg_controllen = sizeof(control);
+
+    // Fill ancillary data
+    int priority = PRIORITY;
+    cmsghp = CMSG_FIRSTHDR(&message);
+    cmsghp->cmsg_level = IPPROTO_IPV6;
+    cmsghp->cmsg_type = IPV6_TCLASS;
+    cmsghp->cmsg_len = CMSG_LEN(sizeof(int));
+    memcpy(CMSG_DATA(cmsghp), &priority, sizeof(int));
+                                                 
+    // Send data
+    auto bytes_sent = sendmsg(sock, &message, 0);
+    cout << "bytes_sent=" << bytes_sent << endl;
+                                                                                 
+    // Check bytes sent
+    if (bytes_sent < 0) {
+        cerr << "Error sending message: " << bytes_sent << endl;
+        bytes_sent = -1;
+    } else {
+        if (bytes_sent == txInfo->length) {
+            ++txCount;
+        } else {
+            cerr << "Error : " << bytes_sent << " bytes sent." << endl;
+        }
+    }
+                                                                                                                                                    
+    cout << "TX count: " << txCount << endl;
+
+    return 0;
+}
+
+int yx_V2xDsmpDataRecvRegister(V2xDsmpRegisterInfo *cbInfo)
+{
+    if (cbInfo == NULL)
+        return -1;
+    g_cb_info = cbInfo;
+
+    return 0;
+}
+
+void* v2x_pthread(void* data)
+{
+    while (1){
+        sampleRx();
+    }
+}
+
+static int v2x_rx_init(void)
+{
+    cout << "v2x rx init Start" << endl;
+
+    // Get handle to Cv2xRadioManager
+    auto & cv2xFactory = Cv2xFactory::getInstance();
+    auto cv2xRadioManager = cv2xFactory.getCv2xRadioManager();
+
+    // Wait for radio manager to complete initialization
+    if (not cv2xRadioManager->isReady()) {
+        if (cv2xRadioManager->onReady().get()) {
+            cout << "C-V2X Radio Manager is ready" << endl;
+        }
+        else {
+            cerr << "C-V2X Radio Manager initialization failed, exiting" << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    // Get C-V2X status and make sure Rx is enabled
+    assert(Status::SUCCESS == cv2xRadioManager->requestCv2xStatus(cv2xStatusCallback));
+    assert(ErrorCode::SUCCESS == gCallbackPromise.get_future().get());
+
+    if (Cv2xStatusType::ACTIVE == gCv2xStatus.rxStatus) {
+        cout << "C-V2X RX status is active" << endl;
+    }
+    else {
+        cerr << "C-V2X RX is inactive" << endl;
+        return EXIT_FAILURE;
+    }
+
+    // Get handle to Cv2xRadio
+    auto cv2xRadio = cv2xRadioManager->getCv2xRadio(TrafficCategory::SAFETY_TYPE);
+
+    // Wait for radio to complete initialization
+    if (not cv2xRadio->isReady()) {
+        if (Status::SUCCESS == cv2xRadio->onReady().get()) {
+            cout << "C-V2X Radio is ready" << endl;
+        }
+        else {
+            cerr << "C-V2X Radio initialization failed." << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    // Create new Rx subscription
+    resetCallbackPromise();
+    assert(Status::SUCCESS == cv2xRadio->createRxSubscription(TrafficIpType::TRAFFIC_NON_IP,
+                                                              RX_PORT_NUM,
+                                                              rxSubCallback));
+    assert(ErrorCode::SUCCESS == gCallbackPromise.get_future().get());
+
+    cout << "v2x rx init Done" << endl;
+
+    return 0;
+}
+
+static int v2x_tx_init(void)
+{
+    cout << "v2x tx init Start" << endl;
+
+    // Get handle to Cv2xRadioManager
+    auto & cv2xFactory = Cv2xFactory::getInstance();
+    auto cv2xRadioManager = cv2xFactory.getCv2xRadioManager();
+
+    // Wait for radio manager to complete initialization
+    if (not cv2xRadioManager->isReady()) {
+        if (cv2xRadioManager->onReady().get()) {
+            cout << "C-V2X Radio Manager is ready" << endl;
+        }
+        else {
+            cerr << "C-V2X Radio Manager initialization failed, exiting" << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    // Get C-V2X status and make sure Tx is enabled
+    assert(Status::SUCCESS == cv2xRadioManager->requestCv2xStatus(cv2xStatusCallback));
+    assert(ErrorCode::SUCCESS == gCallbackPromise.get_future().get());
+
+    if (Cv2xStatusType::ACTIVE == gCv2xStatus.txStatus) {
+        cout << "C-V2X TX status is active" << endl;
+    }
+    else {
+        cerr << "C-V2X TX is inactive" << endl;
+    }
+
+    // Get handle to Cv2xRadio
+    auto cv2xRadio = cv2xRadioManager->getCv2xRadio(TrafficCategory::SAFETY_TYPE);
+
+    // Wait for radio to complete initialization
+    if (not cv2xRadio->isReady()) {
+        if (Status::SUCCESS == cv2xRadio->onReady().get()) {
+            cout << "C-V2X Radio is ready" << endl;
+        }
+        else {
+            cerr << "C-V2X Radio initialization failed." << endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    // Create new Tx SPS flow
+    SpsFlowInfo spsInfo;
+    spsInfo.priority = Priority::PRIORITY_2;
+    spsInfo.periodicity = Periodicity::PERIODICITY_100MS;
+    spsInfo.nbytesReserved = GTx_BUF_LEN;
+    spsInfo.autoRetransEnabledValid = true;
+    spsInfo.autoRetransEnabled = true;
+
+    resetCallbackPromise();
+    assert(Status::SUCCESS == cv2xRadio->createTxSpsFlow(TrafficIpType::TRAFFIC_NON_IP,
+                                                         SPS_SERVICE_ID,
+                                                         spsInfo,
+                                                         SPS_SRC_PORT_NUM,
+                                                         false,
+                                                         0,
+                                                         createSpsFlowCallback));
+    assert(ErrorCode::SUCCESS == gCallbackPromise.get_future().get());
+
+    cout << "v2x tx init Done" << endl;
+
+    return 0;
+}
+
+int yx_V2xSdkInit(void)
+{
+    cout << "yx_V2xSdkInit start" << endl;
+    pthread_t apiPthread;
+
+    v2x_rx_init();
+
+    v2x_tx_init();
+
+    pthread_create(&apiPthread, NULL, v2x_pthread, NULL);
+
+    cout << "C-V2X yx_V2XSdk_Init done" << endl;
+
+    return 0;
+}

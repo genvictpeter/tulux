@@ -1,0 +1,2558 @@
+/*
+ *  Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are
+ *  met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *    * Neither the name of The Linux Foundation nor the names of its
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+ *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+ *  ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+ *  BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ *  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ *  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+@page sequence_diagrams Call Flow Diagrams
+
+@section app_initialization Application initialization call flow
+
+TelSDK initializes various sub-systems during start-up. It marks each sub-system as ready once the initialization procedures are completed for that sub-system. The application has to wait until the corresponding sub-system is ready on which it needs to make API requests. TelSDK provides APIs to check whether sub-system is ready or not.
+
+
+Example:
+
+@subsection phone_manager Phone manager initialization
+
+@anchor fig_phone_manager
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.7]{initialization_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Phone manager initialization}
+  \label{fig_phone_manager}
+\end{figure}
+@endlatexonly
+
+@html_image{initialization_call_flow.png,Phone manager initialization,50,50,Phone manager initialization}
+
+
+1. Application can use IPhoneManager::isSubsystemReady to determine if the system is ready.
+2. The application receives the status i.e. either true or false whether sub-system is ready or not.
+3. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+4. PhoneManager notifies the application when the subsystem is ready through the std::future object.
+5. The application waits until the asynchronous operation i.e onSubsystemReady completes.
+6. PhoneManager updates the application once sub-system initialization completes.
+
+@section namespace_tel Telephony
+
+@subsection make_call Dial call flow
+
+@anchor fig_make_call
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{dial_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Dial call flow}
+  \label{fig_make_call}
+\end{figure}
+@endlatexonly
+
+@html_image{dial_call_flow.png,Dial call flow,80,80,Dial call flow}
+
+1. The application gets the PhoneManager object using PhoneFactory.
+2. The application receives the PhoneManager object in order to get Phone.
+3. The application gets the Phone object for given phone identifier using PhoneManager.
+4. PhoneManager returns Phone object to application. In case phone identifier is not specified, it returns default phone.
+5. The application registers a listener with CallManager to listen to the call info change notifications like DIALING, ALERTING, ACTIVE and ENDED.
+6. The application receives the status like SUCCESS or INVALIDPARAM based on registration of listener to CallManager.
+7. The application dials a number by using makeCall API, optionally specifying callback to get asynchronous response.
+8. The application receives the status like SUCCESS, INVALIDPARAM and FAILED etc based on the execution of makeCall API.
+9. Optionally, the application gets asynchronous response for makeCall using makeCallResponseCallback.
+10. The application receives callback on call info change like DIALING/ALERTING/ACTIVE when other party accepts the call.
+11. The application sends hangup command to hangup the call, optionally specifying callback to get asynchronous response.
+12. The application receives the status like SUCCESS, FAILED etc based on the execution of hangup API.
+13. Optionally, the application gets asynchronous response for hangup using CommandResponseCallback.
+14. The application receives callback on call info change i.e Call Ended from CallManager.
+
+@subsection e_call ECall call flow
+
+@anchor fig_e_call
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{ecall_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{ECall call flow}
+  \label{fig_e_call}
+\end{figure}
+@endlatexonly
+
+@html_image{ecall_call_flow.png,ECall call flow,80,80,ECall call flow}
+
+1. The application gets the PhoneManager object using PhoneFactory.
+2. The application receives the PhoneManager object in order to get Phone.
+3. The application gets the Phone object optionally specifying phone identifier using PhoneManager.
+4. PhoneManager returns Phone object to application, returns default phone in case phone identifier is not specified.
+5. The application registers a listener with CallManager to listen to the call info change notifications like DIALING, ALERTING, ACTIVE etc.
+6. The application receives the status like SUCCESS, FAILED etc  based on registration of listener from CallManager.
+7. The application dials an emergency call by using makeECall API, optionally specifying callback to get asynchronous response.
+8. The application receives the status like SUCCESS, FAILED etc based on the execution of makeECall API.
+9. Optionally, the application gets asynchronous response for makeECall using makeCallResponseCallback.
+10. CallManager sends ecall msd transmission status to the application by using onECallMsdTransmissionStatus API.
+11. The application sends hangup command to hangup the call, optionally gets asynchronous response using callback.
+12. The application receives the status like SUCCESS, FAILED etc based on the execution of hangup API.
+13. Optionally, the application gets asynchronous response for hangup using CommandResponseCallback.
+14. CallManager sends call info change i.e Call Ended to the application by using onCallInfoChange callback function.
+
+@subsection signal_strength Signal strength call flow
+
+@anchor fig_signal_strength
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{signal_strength_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Signal strength call flow}
+  \label{fig_signal_strength}
+\end{figure}
+@endlatexonly
+
+@html_image{signal_strength_call_flow.png,Signal strength call flow,80,80,Signal strength call flow}
+
+1. The application gets PhoneManager object using PhoneFactory.
+2. The application receives the PhoneManager object in order to get Phone instance.
+3. The application gets phone instance for a given phone identifier using PhoneManager object.
+4. PhoneManager returns IPhone object to the application.
+5. Application registers the listener to get notification for signal strength change.
+6. The application receives the status i.e. either SUCCESS or FAILED based on the registration of the listener.
+7. The application requests for signal strength and optionally, gets asynchronous response using ISignalStrengthCallback.
+8. The application receives the status i.e. either SUCCESS or FAILED based on execution of requestSignalStrength API in SapCardManager.
+9. Optionally, the response for signal strength request is received by the application.
+10. Application receives a notification when there is a change in signal strength.
+
+@subsection answer_reject_rejectWithSMS Answer, Reject, RejectWithSMS call flow
+
+@anchor fig_answer_reject_reject_with_sms
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.6]{answer_reject_reject_with_sms_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Answer, Reject, RejectWithSMS call flow}
+  \label{fig_answer_reject_reject_with_sms}
+\end{figure}
+@endlatexonly
+
+@html_image{answer_reject_reject_with_sms_call_flow.png,Answer Reject RejectWithSMS call flow,80,80,Answer Reject RejectWithSMS call flow}
+
+1. The application gets the PhoneManager object using PhoneFactory.
+2. The application receives the PhoneManager object in order to register listener.
+3. The application registers a listener with CallManager to listen incoming call notifications.
+4. The application receives the status like SUCCESS, FAILED etc  based on registration of listener from CallManager.
+5. The application receives onIncomingCall notification when there is an incoming call.
+6. The application performs answer/reject/rejectWithSMS operation using ICall.
+7. The application receives the status like SUCCESS, FAILED etc  based on execution of answer/reject/rejectWithSMS.
+8. Optionally, the application gets asynchronous response for answer/reject/rejectWithSMS using CommandResponseCallback.
+9. The CallManager sends call info change i.e CALL_ACTIVE or CALL_ENDED to the application by using onCallInfoChange callback function.
+
+@subsection hold_call Hold call flow
+
+@anchor fig_hold_call
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{hold_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Hold call flow}
+  \label{fig_hold_call}
+\end{figure}
+@endlatexonly
+
+@html_image{hold_call_flow.png,Hold call flow,80,80,Hold call flow}
+
+1. The application gets the PhoneManager object using PhoneFactory.
+2. The application receives the PhoneManager object in order to get Phone.
+3. The application gets the Phone object for given phone identifier using PhoneManager.
+4. PhoneManager returns Phone object to application, returns default phone in case phone identifier is not specified.
+5. The application registers a listener with CallManager to listen to the call info change notifications like DIALING, ALERTING, ACTIVE etc.
+6. The application receives the status like SUCCESS or INVALIDPARAM based on registration of listener to CallManager.
+7. The application dials a number by using makeCall API, optionally specifying callback to get asynchronous response.
+8. The application receives the status like SUCCESS, INVALIDPARAM and FAILED etc based on the execution of makeCall API.
+9. Optionally, the application gets asynchronous response for makeCall using makeCallResponseCallback.
+10. The CallManager sends call info change i.e CALL_ACTIVE to application by using onCallInfoChange API.
+11. The application sends hold command to hold the call, optionally specifying callback to get asynchronous response.
+12. The application receives the status like SUCCESS, FAILED etc based on the execution of hold API.
+13. Optionally, the application gets asynchronous response for hold using CommandResponseCallback.
+14. The application receives call info change i.e CALL_ON_HOLD from CallManager.
+
+@subsection hold_conference_swap_callflow Hold, Conference, Swap call flow
+
+@anchor fig_hold_conference_swap_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{hold_conference_swap_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Hold, Conference, Swap call flow}
+  \label{fig_hold_conference_swap_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{hold_conference_swap_call_flow.png,Hold Conference Swap call flow,80,80,Hold Conference Swap call flow}
+
+1. The application makes first call using ICall.
+2. The application receives the status like SUCCESS, FAILED etc based on execution of makeCall operation.
+3. Optionally, the application gets asynchronous response for makeCall using makeCallResponseCallback.
+4. The CallManager sends call info change i.e CALL_ACTIVE to application by using onCallInfoChange API.
+5. The application sends hold command to hold the call, optionally specifying callback to get asynchronous response.
+6. The application receives the status like SUCCESS, FAILED etc based on the execution of hold API.
+7. Optionally, the application gets asynchronous response for hold using CommandResponseCallback.
+8. The application receives call info change i.e CALL_ON_HOLD from CallManager.
+9. The application makes second call using ICall.
+10. The application receives the status like SUCCESS, FAILED etc based on execution of makeCall operation.
+11. Optionally, the application gets asynchronous response for makeCall using makeCallResponseCallback.
+12. The CallManager sends call info change i.e CALL_ACTIVE to application by using onCallInfoChange API.
+13. The application requests the PhoneFactory to get ICallManager object.
+14. The application receives the ICallManager object using PhoneFactory.
+15. The application performs conference/swap operation using ICallManager by passing first call and second call. optionally application can pass callback to receive hold response asynchronously.
+16. The application receives the status like SUCCESS, FAILED etc based on the execution of conference/swap API.
+17. Optionally, the application gets asynchronous response for conference/swap using CommandResponseCallback.
+
+@subsection sms_call SMS call flow
+
+@anchor fig_sms_call
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{sms_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{SMS call flow}
+  \label{fig_sms_call}
+\end{figure}
+@endlatexonly
+
+@html_image{sms_call_flow.png,SMS call flow,80,80,SMS call flow}
+
+1. Application gets PhoneManager object using PhoneFactory.
+2. PhoneFactory returns the PhoneManager object to application in order to get list of phone identifiers.
+3. The application retrieves the list of phone identifier on the device using PhoneManager object.
+4. Application receives the status i.e. either SUCCESS or FAILED based on the execution of getPhoneIds API in PhoneManager.
+5. Application registers the listener for incoming SMS with IPhoneManager.
+6. The application receives the status i.e. either SUCCESS or INVALIDPARAM based on successful registration of the listener.
+7. The application gets SmsManager object corresponding to specific phone identifier.
+8. PhoneFactory returns the SmsManager object to application in order to perform operations like send SMS and get SMSC address.
+9. The application sends SMS to the receiver address and optionally gets asynchronous response using CommandResponseCallback.
+10. Application receives the status i.e. either SUCCESS or FAILED based on execution of sendSms API in SmsManager.
+11. Optionally, the response for send SMS is received by the application.
+12. Application gets notified for incoming SMS.
+13. The application requests for SmscAddress and optionally gets asynchronous response using ISmscAddressCallback.
+14. Application receives the status i.e. either SUCCESS or FAILED based on successful execution of requestSmscAddress API in SmsManager.
+15. Optionally, the application receives the SMSC address on success or gets error on failure in the command response callback.
+
+@subsection radio_and_service_state Radio and Service state call flow
+
+@anchor fig_radio_and_service_state_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{radio_and_service_state_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Radio and Service state call flow}
+  \label{fig_radio_and_service_state_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{radio_and_service_state_call_flow.png,Radio and Service state call flow,80,80,Radio and Service state call flow}
+
+1. The application gets PhoneManager object using PhoneFactory.
+2. The application receives the PhoneManager object in order to get Phone instance.
+3. The application gets phone instance for a given phone identifier using PhoneManager object.
+4. PhoneManager returns IPhone object to the application.
+5. Application registers the listener to get notifications for radio and service state change.
+6. The application receives the status i.e. either SUCCESS or FAILED based on the registration of the listener.
+7. The application request the Phone to get radio state.
+8. The application receives the radio state like RADIO_STATE_ON, OFF or UNAVAILABLE.
+9. Application receives a notification when there is a change in radio state.
+10. The application request the Phone to get service state.
+11. The application receives the service state like IN_SERVICE, OUT_OF_SERVICE, EMERGENCY_ONLY or RADIO_OFF.
+12. Application receives a notification when there is a change in service state.
+
+@subsection network_selection_call_flow Network Selection Manager call flow
+
+Network selection manager provides APIs to get and set network selection mode, get and set preferred networks and perform
+network scan for availbale networks. Registered listener will get notified for the change in network selection mode.
+
+@anchor fig_network_selection_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.38]{network_selection_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Network selection manager call flow}
+  \label{fig_network_selection_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{network_selection_call_flow.png,Network selection manager call flow,80,80,Network selection manager call flow}
+
+1. Application requests phone factory for network selection manager.
+2. Phone factory returns INetworkSelectionManager object using which application will
+register or deregister a listener.
+3. Application can register a listener to get notifications for network selection mode change.
+4. Status of register listener i.e. either SUCCESS or other status will be returned to the application.
+5. Application requests for network selection mode using INetworkSelectionManager object and gets
+asynchronous response using SelectionModeResponseCallback.
+6. The application receives the status i.e. either SUCCESS or other status based on the execution
+of requestNetworkSelectionMode API.
+7. The response for get network selection mode request is received by the application.
+8. The application can also set network selection mode and optionally gets asynchronous response using
+ResponseCallback. MCC and MNC are optional for AUTOMATIC network selection mode.
+9. Application receives the status i.e. either SUCCESS or other status based on the execution
+of setNetworkSelectionMode API.
+10. Optionally the response for set network selection mode request is received by the application.
+11. Registered listener will get notified for the network selection mode change.
+12. Similarly, the application requests for preferred networks using INetworkSelectionManager object
+and gets asynchronous response using PreferredNetworksCallback.
+13. The application receives the status i.e. either SUCCESS or other status based on the execution
+of requestPreferredNetworks API.
+14. The response for get preferred networks request i.e. 3GPP preferred network list and
+static 3GPP preferred network list is received by the application asynchronously. Higher
+priority networks appear first in the list. The networks that appear in the 3GPP Preferred
+Networks list get higher priority than the networks in the static 3GPP preferred networks list.
+15. The application can set 3GPP preferred network list and optionally gets asynchronous response using ResponseCallback. If clear previous networks flag is false then new 3GPP preferred network list is appended to existing preferred network list. If flag is true then old list is flushed and new 3GPP preferred network list is added.
+16. Application receives the status i.e. either SUCCESS or other status based on the execution
+of setPreferredNetworks API.
+17. Optionally the response for set preferred networks request is received by the application.
+18. The application can perform network scan for available networks using INetworkSelectionManager object
+and gets asynchronous response using NetworkScanCallback.
+19. Application receives the status i.e. either SUCCESS or other status based on the execution
+of performNetworkScan API.
+20. Network name, MCC, MNC and status of the operator will be received by the application.
+21. Application can deregister a listener there by it would not get notifications.
+22. Status of deregister listener i.e. either SUCCESS or other status will be returned to the application.
+
+@subsection serving_system_call_flow Serving System Manager Call Flow
+
+Serving system manager provides APIs to get and set RAT mode preference and get and set service domain preference.
+Registered listener will get notified for the change in RAT mode and service domain preference change.
+
+@anchor fig_serving_system_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.38]{serving_system_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Serving System Manager Call Flow}
+  \label{fig_serving_system_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{serving_system_call_flow.png,Serving System Manager Call Flow,80,80,Serving System Manager Call Flow}
+
+1. Application requests phone factory for serving system manager.
+2. Phone factory returns IServingSystemManager object using which application will
+register or deregister a listener.
+3. Application can register a listener to get notifications for RAT mode and service domain
+preference changes.
+4. Status of register listener i.e. either SUCCESS or other status will be returned to the application.
+5. Application requests for RAT mode preference using IServingSystemManager object and gets
+asynchronous response using RatPreferenceCallback.
+6. The application receives the status i.e. either SUCCESS or other status based on the execution
+of requestRatPreference API.
+7. The response for get RAT preference request is received by the application.
+8. The application can also set RAT mode preference and optionally gets asynchronous response using
+ResponseCallback.
+9. Application receives the status i.e. either SUCCESS or other status based on the execution
+of setRatPreference API.
+10. Optionally the response for set RAT preference request is received by the application.
+11. Registered listener will get notified for the RAT mode preference change.
+12. Application requests for service domain preference using IServingSystemManager object and gets
+asynchronous response using ServiceDomainPreferenceCallback.
+13. The application receives the status i.e. either SUCCESS or other status based on the execution
+of requestServiceDomainPreference API.
+14. The response for get service domain preference request is received by the application.
+15. The application can also set service domain preference and optionally gets asynchronous response using
+ResponseCallback.
+16. Application receives the status i.e. either SUCCESS or other status based on the execution
+of setServiceDomainPreference API.
+17. Optionally the response for set service domain preference request is received by the application.
+18. Registered listener will get notified for the service domain preference change.
+19. Application can deregister a listener there by it would not get notifications.
+20. Status of deregister listener i.e. either SUCCESS or other status will be returned to the application.
+
+@section card_services Card Services
+
+@subsection get_applications Get applications call flow
+
+@anchor fig_get_applications
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.6]{get_applications_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Get applications call flow}
+  \label{fig_get_applications}
+\end{figure}
+@endlatexonly
+
+@html_image{get_applications_call_flow.png,Get applications call flow,80,80,Get applications call flow}
+
+1. Application gets the CardManager object from PhoneFactory.
+2. Application receives CardManager object in order to perform operations like getSlotIds and getCard.
+3. The application registers a listener for Card info change event with CardManager.
+4. Application receives the status i.e. either SUCCESS or INVALIDPARAM based on the registration of listener.
+5. The response from onCardInfoChanged is received by the application whenever there is card info change.
+6. The application gets the slotIds from the sub-system using CardManager.
+7. Application receives the status i.e. either SUCCESS or NOTREADY along with the updated slotIds.
+8. Then, the application sends request to CardManager to get Card object for a specific slotId.
+9. Application receives Card object from CardManager in order to perform card operation like getApplications.
+10. The application gets the CardApps from Card object.
+11. The application receives CardApps which contain information such as AppId, AppType and AppState.
+12. Now the application removes the listener associated with CardManager.
+13. Application receives the status i.e. either SUCCESS or NOSUCH for the removal of listener.
+
+@subsection transmit_apdu Transmit APDU call flow
+
+@subsubsection apdu_logical On logical channel
+
+@anchor fig_apdu_logical
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{transmit_apdu_logical_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{On logical channel}
+  \label{fig_apdu_logical}
+\end{figure}
+@endlatexonly
+
+@html_image{transmit_apdu_logical_call_flow.png,On logical channel,80,80,On logical channel}
+
+1. The Application requests CardApp for the SIM application identifier.
+2. The application receives the application identifier to perform open logical channel.
+3. Application sends request to open the logical channel with the application identifier and optionally, gets asynchronous response in OpenLogicalChannelCallback.
+4. The application receives the status i.e. either SUCCESS or FAILED based on execution of openLogicalChannel API.
+5. Optionally, the application receives the response which contains either channel number on success or error in case of failure.
+6. Then, the application transmits the APDU data on logical channel using the channel obtained earlier. Optionally, gets asynchronous response in TransmitApduResponseCallback.
+7. The application receives the status i.e. either SUCCESS or FAILED based on execution of transmitApduLogicalChannel API.
+8. Optionally, the application receives the response which contains either result on success or error in case of failure.
+9. Finally, the application closes the logical channel that is opened to transmit APDU and optionally, gets asynchronous response in CommandResponseCallback.
+10. The application receives the status i.e. either SUCCESS or FAILED based on execution of closeLogicalChannel API.
+11. Optionally, the application receives the response which contains error in case of failure.
+
+@subsubsection apdu_basic On basic channel
+
+@anchor fig_apdu_basic
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{transmit_apdu_basic_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{On basic channel}
+  \label{fig_apdu_basic}
+\end{figure}
+@endlatexonly
+
+@html_image{transmit_apdu_basic_call_flow.png,On basic channel,80,80,On basic channel}
+
+1. Application gets the ICardManager object from PhoneFactory.
+2. Application receives ICardManager object in order to perform operation like getCard.
+3. The application gets ICard object for a specific slotId from ICardManager.
+4. Application receives ICard object in order to perform card operation like transmitApduBasicChannel.
+5. The application transmits APDU data on basic channel and optionally, gets asynchronous response in TransmitApduResponseCallback.
+6. The application receives the status i.e. either SUCCESS or FAILED based on execution of transmitApduBasicChannel API.
+7. Optionally, the application receives the response which contains either result on success or error in case of failure.
+
+@subsection sap_manager_call_flow SAP card manager call flow
+
+@subsubsection sap_card_operations Request card reader status, Request ATR, Transmit APDU call flow
+
+@anchor fig_sap_card_operations
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{sap_card_operations.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Request card reader status, Request ATR, Transmit APDU call flow}
+  \label{fig_sap_card_operations}
+\end{figure}
+@endlatexonly
+
+@html_image{sap_card_operations.png,Request card reader status, Request ATR, Transmit APDU call flow,80,80,Request card reader status, Request ATR, Transmit APDU call flow}
+
+1. The application gets SapCardManager object corresponding to slotId using PhoneFactory.
+2. The application receives the SapCardManager object in order to perform SAP operations like request ATR, Card Reader Status and transmit APDU.
+3. The application opens SIM Access Profile(SAP) connection with SIM card using default SAP condition (i.e. SAP_CONDITION_BLOCK_VOICE_OR_DATA) and optionally, gets asynchronous
+response using CommandResponseCallback.
+4. The application receives the status i.e. either SUCCESS or FAILED based on execution of openConnection API in SapCardManager.
+5. Optionally, the response for openConnection is received by the application.
+6. The application sends request card reader status command and optionally, gets asynchronous response using ICardReaderCallback.
+7. The application receives the status i.e. either SUCCESS or FAILED based on execution of requestCardReaderStatus API in SapCardManager.
+8. Optionally, the response for card reader status is received by the application.
+9. Similarly, the application can send SAP Answer To Reset command and optionally, gets asynchronous response using IAtrResponseCallback.
+10. The application receives the status i.e. either SUCCESS or FAILED based on execution of requestAtr API in SapCardManager.
+11. Optionally, the response for SAP Answer To Reset is received by the application.
+12. Similarly, the application sends the APDU on SAP mode and optionally, gets asynchronous response using ISapTransmitApduResponseCallback.
+13. The application receives the status i.e. either SUCCESS or FAILED based on execution of transmitApdu API in SapCardManager.
+14. Optionally, the response for transmit APDU is received by the application.
+15. Now the application closes the SAP connection with SIM and optionally, gets asynchronous response using CommandResponseCallback.
+16. The application receives the status i.e. either SUCCESS or FAILED based on execution of closeConnection API in SapCardManager.
+17. Optionally, the response for SAP close connection is received by the application.
+
+@subsubsection sap_mgr_sim_call_flow SIM Turn off, Turn on and Reset call flow
+
+@anchor fig_sap_mgr_sim_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{sap_mgr_sim_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{SIM Turn off, Turn on and Reset call flow}
+  \label{fig_sap_mgr_sim_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{sap_mgr_sim_call_flow.png,SIM Turn off, Turn on and Reset call flow,80,80,SIM Turn off, Turn on and Reset call flow}
+
+1. Application gets SapCardManager object corresponding to slotID using PhoneFactory.
+2. PhoneFactory returns the SapCardManager object to application in order to perform SAP operations like SIM power off, on or reset.
+3. The application opens SIM Access Profile(SAP) connection with SIM card using default SAP condition (i.e. SAP_CONDITION_BLOCK_VOICE_OR_DATA) and optionally, gets
+asynchronous response using CommandResponseCallback.
+4. Application receives the status i.e. either SUCCESS or FAILED based on execution of openConnection API in SapCardManager.
+5. Optionally, the response for openConnection is received by the application.
+6. The application sends SIM Power Off command to turn off the SIM and optionally, gets asynchronous response using CommandResponseCallback.
+7. The application receives the status i.e. either SUCCESS or FAILED based on execution of requestSimPowerOff API in SapCardManager.
+8. Optionally, the response for SIM Power Off is received by the application.
+9. Similarly, the application can send SIM Power On command to turn on the SIM and optionally, gets asynchronous response using CommandResponseCallback.
+10. The application receives the status i.e. either SUCCESS or FAILED based on execution of requestSimPowerOn API in SapCardManager.
+11. Optionally, the response for SIM Power On is received by the application.
+12. Similarly, the application sends SIM Reset command to perform SIM Reset and optionally, gets asynchronous response.
+13. The application receives the status i.e. either SUCCESS or FAILED based on execution of requestSimReset API in SapCardManager.
+14. Optionally, the response for SIM Reset is received by the application.
+15. Now the application closes the SAP connection with SIM and optionally, gets asynchronous response using CommandResponseCallback.
+16. The application receives the status i.e. either SUCCESS or FAILED based on execution of closeConnection API in SapCardManager.
+17. Optionally, the response for SAP close connection is received by the application.
+
+@subsection subscription_call_flow Subscription Call flow
+
+@subsubsection subscription_initialization Subscription initialization
+
+@anchor fig_subscription_initialization
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.42]{subscription_initialization_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Subscription initialization call flow}
+  \label{fig_sub subscription_initialization}
+\end{figure}
+@endlatexonly
+
+@html_image{subscription_initialization_call_flow.png,Subscription initialization call flow,80,80,subscription initialization call flow}
+
+1. Application can use ISubscriptionManager::isSubsystemReady to determine if the SubscriptionManager is ready.
+2. The application receives the status i.e either true or false whether sub-system is ready or not.
+3. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+4. SubscriptionManager notifies the application when the subsystem is ready through the std::future object.
+5. The application waits until the asynchronous operation i.e onSubsystemReady completes.
+6. SubscriptionManager uses ICardManager::isSubsystemReady to determine if the CardManager is ready.
+7. The SubscriptionManager receives the status i.e either true or false whether sub-system is ready or not.
+8. If it is not ready, then the SubscriptionManager could use onSubsystemReady which returns std::future.
+9. CardManager notifies the SubscriptionManager when the subsystem is ready through the std::future object.
+10. The SubscriptionManager waits until the asynchronous operation i.e onSubsystemReady completes.
+11. CardManager updates the SubscriptionManager once the card manager sub-system is ready
+12. SubscriptionManager uses ISubscription::isReady to determine if the Subscription is ready.
+13. The SubscriptionManager receives the status i.e either true or false whether sub-system is ready or not.
+14. If it is not ready, then the SubscriptionManager could use onSubsystemReady which returns std::future.
+15. Subscription notifies the SubscriptionManager when the subsystem is ready through the std::future object.
+16. The SubscriptionManager waits until the asynchronous operation i.e onSubsystemReady completes.
+17. Subscription updates the SubscriptionManager when the subscription is ready.
+18. SubscriptionManager updates the application once subscription manager initialization completes.
+
+
+@subsubsection subscription_call Subscription call flow
+
+@anchor fig_subscription_call
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{subscription_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Subscription call flow}
+  \label{fig_sub subscription_call}
+\end{figure}
+@endlatexonly
+
+@html_image{subscription_call_flow.png,Subscription call flow,80,80,subscription call flow}
+
+1. The application gets the PhoneManager object using PhoneFactory.
+2. The application receives the PhoneManager object in order to get Subscription.
+3. The application gets the Subscription object for given slot identifier using SubscriptionManager.
+4. SubscriptionManager returns Subscription object to application. Subscription can be used to get subscription details like countryISO, operator details etc.
+5. The Subscription manager registers a listener with CardManager to listen to the card info change notifications like card state PRESENT, ABSENT, UNKNOWN, ERROR and RESTRICTED.
+6. The SubscriptionManager receives the status like SUCCESS or INVALIDPARAM based on registration of listener to CardManager.
+7. The SubscriptionManager receives callback card info change i.e subscription info changed or removed.
+8. The SubscriptionManager updates the application once the subscription info is updated.
+
+@section location_manager_call_flow Call flow for location services
+
+Application will get the location manager object from location factory. The caller needs to register a listener. Application would then need to start the reports using one of 2 APIs depending on if the detailed or basic reports are needed.
+When reports are no longer required, the app needs to stop the report and de-register the listener.
+
+@subsection location_manager_basic_reports_callflow Call flow to register/remove listener for generating basic reports
+
+@anchor fig_location_manager_basic_reports_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_manager_basic_reports_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to register/remove listener for generating basic reports}
+  \label{fig_location_manager_basic_reports_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_manager_basic_reports_callflow.png,Call flow to register/remove listener for generating basic reports,80,80,Call flow to register/remove listener for generating basic reports}
+
+1. Application requests location factory for location manager object.
+2. Location factory returns ILocationManager object using which application will register or remove a listener.
+3. Application can register a listener for getting notifications for location updates.
+4. Status of register listener i.e. either SUCCESS or FAILED will be returned to the application.
+5. Application starts the basic reports using startBasicReports API for getting location updates.
+6. Status of startBasicReports i.e. either SUCCESS or FAILED will be returned to the application.
+7. The response for startBasicReports is received by the application.
+8. Application will get location updates like latitude, longitude and altitude etc.
+9. Application stops receiving the report through stopReports API.
+10. Status of stopReports i.e. either SUCCESS or FAILED will be returned to the application.
+11. The response for stopReports is received by the application.
+12. Application can remove listener and when the number of listeners are zero then location service will get stopped automatically.
+13. Status of remove listener i.e. either SUCCESS or FAILED will be returned to the application.
+
+@subsection location_manager_detailed_reports_callflow Call flow to register/remove listener for generating detailed reports
+
+@anchor fig_location_manager_detailed_reports_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_manager_detailed_reports_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to register/remove listener for generating detailed reports}
+  \label{fig_location_manager_detailed_reports_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_manager_detailed_reports_callflow.png,Call flow to register/remove listener for generating detailed reports,80,80,Call flow to register/remove listener for generating detailed reports}
+
+1. Application requests location factory for location manager object.
+2. Location factory returns ILocationManager object using which application will register or remove a listener.
+3. Application can register a listener for getting notifications for location, satellite vehicle, jammer signal, nmea and measurements updates.
+4. Status of register listener i.e. either SUCCESS or FAILED will be returned to the application.
+5. Application starts the detailed reports using startDetailedReports API for getting location, satellite vehicle, jammer signal, nmea and measurements updates.
+6. Status of startDetailedReports i.e. either SUCCESS or FAILED will be returned to the application.
+7. The response for startDetailedReports is received by the application.
+8. Application will get location updates like latitude, longitude and altitude etc.
+9. Application will receive satellite vehicle information like SV status and constellation etc.
+10. Application will receive nmea information.
+11. Application will receive jammer information etc.
+12. Application will receive measurement information.
+13. Application stops receiving all the reports through stopReports API.
+14. Status of stopReports i.e. either SUCCESS or FAILED will be returned to the application.
+15. The response for stopReports is received by the application.
+16. Application can remove listener and when the number of listeners are zero then location service will get stopped automatically.
+17. Status of remove listener i.e. either SUCCESS or FAILED will be returned to the application.
+
+@subsection location_manager_detailed_engine_reports_callflow Call flow to register/remove listener for generating detailed engine reports
+
+@anchor fig_location_manager_detailed_engine_reports_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_manager_detailed_engine_reports_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to register/remove listener for generating detailed engine reports}
+  \label{fig_location_manager_detailed_engine_reports_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_manager_detailed_engine_reports_callflow.png,Call flow to register/remove listener for generating detailed engine reports,80,80,Call flow to register/remove listener for generating detailed engine reports}
+
+1. Application requests location factory for location manager object.
+2. Location factory returns ILocationManager object using which application will register or remove a listener.
+3. Application can register a listener for getting notifications for location, satellite vehicle and jammer signal, nmea and measurements updates.
+4. Status of register listener i.e. either SUCCESS or FAILED will be returned to the application.
+5. Application starts the detailed engine reports using startDetailedEngineReports API for getting location, satellite vehicle, jammer signal, nmea and measurements updates.
+6. Status of startDetailedReports i.e. either SUCCESS or FAILED will be returned to the application.
+7. The response for startDetailedReports is received by the application.
+8. Application will get location updates like latitude, longitude and altitude etc from the requested engine type(SPE/PPE/Fused).
+9. Application will receive satellite vehicle information like SV status and constellation etc depending on the requested SPE/PPE/Fused engine type.
+10. Application will receive nmea information depending on the requested SPE/PPE/Fused engine type
+11. Application will receive jammer information etc depending on the requested SPE/PPE/Fused engine type.
+12. Application will receive measurement information etc depending on the requested SPE/PPE/Fused engine type.
+13. Application stops receiving all the reports through stopReports API.
+14. Status of stopReports i.e. either SUCCESS or FAILED will be returned to the application.
+15. The response for stopReports is received by the application.
+16. Application can remove listener and when the number of listeners are zero then location service will be stopped automatically.
+17. Status of remove listener i.e. either SUCCESS or FAILED will be returned to the application.
+
+@subsection location_manager_system_info_updates_callflow Call flow to register/remove listener for system info updates
+
+@anchor fig_location_manager_system_info_updates_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_manager_system_info_updates_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to register/remove listener for system info updates}
+  \label{fig_location_manager_system_info_updates_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_manager_system_info_updates_callflow.png,Call flow to register/remove listener for system info updates,80,80,Call flow to register/remove listener for system info updates}
+
+1. Application requests location factory for location manager object.
+2. Location factory returns ILocationManager object using which application will register or remove a listener.
+3. Application can register a listener for system information updates with registerForSystemInfoUpdates.
+4. Status of registerForSystemInfoUpdates i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for registerForSystemInfoUpdates is received by the application.
+6. Application will get system information update.
+7. Application can remove listener with deRegisterForSystemInfoUpdates.
+8. Status of deRegisterForSystemInfoUpdates i.e. either SUCCESS or FAILED will be returned to the application.
+9. The response for deRegisterForSystemInfoUpdates is received by the application.
+
+@subsection location_manager_request_energy_consumed_callflow Call flow to request energy consumed information
+
+@anchor fig_location_manager_request_energy_consumed_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_manager_request_energy_consumed_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to request energy consumed information}
+  \label{fig_location_manager_request_energy_consumed_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_manager_request_energy_consumed_callflow.png,Call flow to request energy consumed information,80,80,Call flow to request energy consumed information}
+
+1. Application requests location factory for location manager object.
+2. Location factory returns ILocationManager object.
+3. Application can request for energy consumed information with requestEnergyConsumedInfo.
+4. Status of requestEnergyConsumedInfo i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for requestEnergyConsumedInfo is received by the application.
+
+@subsection location_configurator_constraint_tunc_callflow Call flow to enable/disable constraint time uncertainty
+
+@anchor fig_location_configurator_constraint_tunc_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_constraint_tunc_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to enable/disable constraint time uncertainty}
+  \label{fig_location_configurator_constraint_tunc_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_constraint_tunc_callflow.png,Call flow to enable/disable constraint time uncertainty,80,80,Call flow to enable/disable constraint time uncertainty}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application enables/disables constraint tunc using configureCTunc API.
+4. Status of configureCTunc i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for configureCTunc is received by the application.
+
+@subsection location_configurator_pace_callflow Call flow to enable/disable PACE
+
+@anchor fig_location_configurator_pace_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_pace_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to enable/disable PACE}
+  \label{fig_location_configurator_pace_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_pace_callflow.png,Call flow to enable/disable PACE,80,80,Call flow to enable/disable PACE}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application enables/disables PACE using configurePACE API.
+4. Status of configurePACE i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for configurePACE is received by the application.
+
+@subsection location_configurator_delete_aiding_data_callflow Call flow to delete all aiding data
+
+@anchor fig_location_configurator_delete_aiding_data_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_delete_aiding_data_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to delete all aiding data}
+  \label{fig_location_configurator_delete_aiding_data_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_delete_aiding_data_callflow.png,Call flow to delete all aiding data,80,80,Call flow to delete all aiding data}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application deletes all aiding data using deleteAllAidingData API.
+4. Status of deleteAllAidingData i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for deleteAllAidingData is received by the application.
+
+@subsection location_configurator_configure_lever_arm_callflow Call flow to configure lever arm parameters
+
+@anchor fig_location_configurator_configure_lever_arm_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_configure_lever_arm_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to configure lever arm parameters}
+  \label{fig_location_configurator_configure_lever_arm_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_configure_lever_arm_callflow.png,Call flow to configure lever arm parameters,80,80,Call flow to configure lever arm parameters}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application configures lever arm parameters using configureLeverArm API.
+4. Status of configureLeverArm i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for configureLeverArm is received by the application.
+
+@subsection location_configurator_configure_constellation_callflow Call flow to configure blacklisted constellations
+
+@anchor fig_location_configurator_configure_constellation_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_configure_constellation_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to configure blacklisted constellations}
+  \label{fig_location_configurator_configure_constellation_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_configure_constellation_callflow.png,Call flow to configure blacklisted constellations,80,80,Call flow to configure blacklisted constellations}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application configures blacklisted constellations using configureConstellations API.
+4. Status of configureConstellations i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for configureConstellations is received by the application.
+
+@subsection location_configurator_configure_robust_location_callflow Call flow to configure robust location
+
+@anchor fig_location_configurator_configure_robust_location_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_configure_robust_location_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to configure robust location}
+  \label{fig_location_configurator_configure_robust_location_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_configure_robust_location_callflow.png,Call flow to configure robust location,80,80,Call flow to configure robust location}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application configures robust location using configureRobustLocation API.
+4. Status of configureRobustLocation i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for configureRobustLocation is received by the application.
+
+@subsection location_configurator_configure_min_gps_week_callflow Call flow to configure min gps week
+
+@anchor fig_location_configurator_configure_min_gps_week_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_configure_min_gps_week_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to configure min gps week}
+  \label{fig_location_configurator_configure_min_gps_week_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_configure_min_gps_week_callflow.png,Call flow to configure min gps week,80,80,Call flow to configure min gps week}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application configures min gps week using configureMinGpsWeek API.
+4. Status of configureMinGpsWeek i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for configureMinGpsWeek is received by the application.
+
+@subsection location_configurator_request_min_gps_week_callflow Call flow to request min gps week
+
+@anchor fig_location_configurator_request_min_gps_week_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_request_min_gps_week_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to request min gps week}
+  \label{fig_location_configurator_request_min_gps_week_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_request_min_gps_week_callflow.png,Call flow to request min gps week,80,80,Call flow to request min gps week}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application requests min gps week using requestMinGpsWeek API.
+4. Status of requestMinGpsWeek i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for requestMinGpsWeek is received by the application.
+
+@subsection location_configurator_delete_aiding_data_warm_callflow Call flow to delete specified data
+
+@anchor fig_location_configurator_delete_aiding_data_warm_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_delete_aiding_data_warm_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to delete specified data}
+  \label{fig_location_configurator_delete_aiding_data_warm_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_delete_aiding_data_warm_callflow.png,Call flow to delete specified data,80,80,Call flow to delete specified data}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application requests delete specified data using deleteAidingData API.
+4. Status of deleteAidingData i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for deleteAidingData is received by the application.
+
+@subsection location_configurator_configure_min_sv_elevation_callflow Call flow to configure min sv elevation
+
+@anchor fig_location_configurator_configure_min_sv_elevation_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_configure_min_sv_elevation_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to configure min sv elevation}
+  \label{fig_location_configurator_configure_min_sv_elevation_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_configure_min_sv_elevation_callflow.png,Call flow to configure min sv elevation,80,80,Call flow to configure min sv elevation}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application configures min SV elevation using configureMinSVElevation API.
+4. Status of configureMinSVElevation i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for configureMinSVElevation is received by the application.
+
+@subsection location_configurator_request_min_sv_elevation_callflow Call flow to request min sv elevation
+
+@anchor fig_location_configurator_request_min_sv_elevation_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_request_min_sv_elevation_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to request min sv elevation}
+  \label{fig_location_configurator_request_min_sv_elevation_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_request_min_sv_elevation_callflow.png,Call flow to request min sv elevation,80,80,Call flow to request min sv elevation}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application requests min SV elevation using requestMinSVElevation API.
+4. Status of requestMinSVElevation i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for requestMinSVElevation is received by the application.
+
+@subsection location_configurator_request_robust_location_callflow Call flow to request robust location
+
+@anchor fig_location_configurator_request_robust_location_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_request_robust_location_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to request robust location}
+  \label{fig_location_configurator_request_robust_location_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_request_robust_location_callflow.png,Call flow to request robust location,80,80,Call flow to request robust location}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application requests robust location using requestRobustLocation API.
+4. Status of requestRobustLocation i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for requestRobustLocation is received by the application.
+
+@subsection location_configurator_configure_dr_engine_callflow Call flow to configure dead reckoning engine
+
+@anchor fig_location_configurator_configure_dr_engine_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_configure_dr_engine_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to configure dead reckoning engine}
+  \label{fig_location_configurator_configure_dr_engine_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_configure_dr_engine_callflow.png,Call flow to configure dead reckoning engine,80,80,Call flow to configure dead reckoning engine}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application configures dead reckoning engine using configureDR API.
+4. Status of configureDR i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for configureDR is received by the application.
+
+@subsection location_configurator_configure_secondary_band_callflow Call flow to configure secondary band
+
+@anchor fig_location_configurator_configure_secondary_band_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_configure_secondary_band_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to configure secondary band}
+  \label{fig_location_configurator_configure_secondary_band_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_configure_secondary_band_callflow.png,Call flow to configure secondary band,80,80,Call flow to configure secondary band}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application configures secondary band using configureSecondaryBand API.
+4. Status of configureSecondaryBand i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for configureSecondaryBand is received by the application.
+
+@subsection location_configurator_request_secondary_band_callflow Call flow to request secondary band
+
+@anchor fig_location_configurator_request_secondary_band_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{location_configurator_request_secondary_band_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to request secondary band}
+  \label{fig_location_configurator_request_secondary_band_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{location_configurator_request_secondary_band_callflow.png,Call flow to request secondary band,80,80,Call flow to request secondary band}
+
+1. Application requests location factory for location configurator object.
+2. Location factory returns ILocationConfigurator object.
+3. Application requests secondary band using requestSecondaryBandConfig API.
+4. Status of requestSecondaryBandConfig i.e. either SUCCESS or FAILED will be returned to the application.
+5. The response for requestSecondaryBandConfig is received by the application.
+
+@section data_call_flow Data Services
+
+@subsection data_connection_manager_callflow Start/Stop for data connection manager call flow
+
+@anchor fig_data_connection_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{data_connection_manager_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Start/Stop for data connection manager call flow}
+  \label{fig_sub data_connection_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{data_connection_manager_call_flow.png,Start/Stop for data connection manager call flow,60,60,Start/Stop for data connection manager call flow}
+
+1. Application requests data factory for data connection manager object.
+2. Data factory returns IDataConnectionManager object to application.
+3. Application registers the listener to get notifications for data call change.
+4. The application receives the status i.e. either SUCCESS or FAILED based on the registration of the listener.
+5. Application requests for start data call and optionally gets asynchronous response using startDataCallback.
+6. Application receives the status i.e. either SUCCESS or FAILED based on the execution of startDataCall.
+7. Optionally, the application gets asynchronous response for startDataCall using startDataCallback.
+8. Application requests for stop data call and optionally gets asynchronous response using stopDataCallback.
+9. Application receives the status i.e. either SUCCESS or FAILED based on the execution of stopDataCall.
+10. Optionally, the application gets asynchronous response for stopDataCall using stopDataCallback.
+11. Application receives a notification when there is a change in data call.
+12. Application removes the listener.
+13. Application receives the status i.e. SUCCESS or FAILED for the removal of listener.
+
+@subsection data_profile_manager_callflow Request/Create/Delete/Modify for data profile manager call flow
+
+@anchor fig_data_profile_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{data_profile_create_delete_modify_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Request/Create/Delete/Modify for data profile manager call flow}
+  \label{fig_data_profile_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{data_profile_create_delete_modify_call_flow.png,Request/Create/Delete/Modify for data profile call flow,60,60,Request/Create/Delete/Modify for data profile call flow}
+
+1. Application requests data factory for data profile manager object.
+2. Data factory returns IDataProfileManager object to application.
+3. Application requests for profile list and optionally gets asynchronous response using dataProfilesCallback.
+4. Application receives the status i.e. either SUCCESS or FAILED based on the execution of requestProfileList.
+5. Optionally, the application gets asynchronous response for requestProfileList using dataProfilesCallback.
+6. Application requests for create profile and optionally gets asynchronous response using createProfilesCallback.
+7. Application receives the status i.e. either SUCCESS or FAILED based on the execution of createProfile.
+8. Optionally, the application gets asynchronous response for createProfile using createProfilesCallback.
+9. Application requests for delete profile and optionally gets asynchronous response using deleteProfilesCallback.
+10. Application receives the status i.e. either SUCCESS or FAILED based on the execution of deleteProfile.
+11. Optionally, the application gets asynchronous response for deleteProfile using deleteProfilesCallback.
+12. Application requests for modify profile and optionally gets asynchronous response using modifyProfilesCallback.
+13. Application receives the status i.e. either SUCCESS or FAILED based on the execution of modifyProfile.
+14. Optionally, the application gets asynchronous response for modifyProfile using modifyProfilesCallback.
+15. Application requests for query profile and optionally gets asynchronous response using queryProfilesCallback.
+16. Application receives the status i.e. either SUCCESS or FAILED based on the execution of queryProfile.
+17. Optionally, the application gets asynchronous response for queryProfile using queryProfilesCallback.
+18. Application requests for request profile and optionally gets asynchronous response using requestProfileByIdCallback.
+19. Application receives the status i.e. either SUCCESS or FAILED based on the execution of requestProfile.
+20. Optionally, the application gets asynchronous response for requestProfile using requestProfileByIdCallback.
+
+@subsection data_filter_call_flow Data Filter Manager Call Flow
+
+Data Filter manager provides APIs to get/set data filter mode, add/remove data restrict filters.
+Its API can used per data call or globally to apply the same changes to all the underlying
+currently up data call. It also has listener interface for notifications for data filter status update.
+Application will get the Data Filter manager object from data factory.
+The application can register a listener for data filter mode change updates.
+
+@subsubsection get_and_set_data_filter_mode_call_flow Call flow to Set/Get data filter mode
+
+@anchor fig_get_and_set_data_filter_mode_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{get_and_set_data_filter_mode_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Get/Set data filter mode call flow}
+  \label{fig_get_and_set_data_filter_mode_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{get_and_set_data_filter_mode_call_flow.png,Get/Set data filter mode call flow,80,80,Get/Set data filter mode call flow}
+
+1. Application requests data factory for data connection manager object.
+2. Data factory returns IDataConnectionManager object to application.
+3. Application requests data factory for data filter manager object.
+4. Data factory returns IDataFilterManager object to application.
+5. Application requests for start data call and optionally gets asynchronous response using startDataCallback.
+6. Application receives the status i.e. either SUCCESS or FAILED based on the execution of startDataCall.
+7. Optionally, the application gets asynchronous response for startDataCall using startDataCallback.
+8. Application requests for set data filter mode to enable and optionally gets asynchronous response using ResponseCallback.
+9. Application receives the status i.e. either SUCCESS or FAILED based on the execution of setDataRestrictMode.
+10. Optionally, the application gets asynchronous response for setDataRestrictMode using ResponseCallback.
+11. Application requests for get data filter mode and optionally gets asynchronous response using DataRestrictModeCb.
+12. Application receives the status i.e. either SUCCESS or FAILED based on the execution of requestDataRestrictMode.
+13. Optionally, the application gets asynchronous response for requestDataRestrictMode using DataRestrictModeCb.
+
+@subsubsection add_data_filter_call_flow Call flow to Add data restrict filter
+
+@anchor fig_add_data_filter_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{add_data_filter_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Add data restrict filter call flow}
+  \label{fig_add_data_filter_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{add_data_filter_call_flow.png,Add data restrict filter call flow,80,80,Add data restrict filter call flow}
+
+1. Application requests data factory for data connection manager object.
+2. Data factory returns IDataConnectionManager object to application.
+3. Application requests data factory for data filter manager object.
+4. Data factory returns IDataFilterManager object to application.
+5. Application requests for start data call and optionally gets asynchronous response using startDataCallback.
+6. Application receives the status i.e. either SUCCESS or FAILED based on the execution of startDataCall.
+7. Optionally, the application gets asynchronous response for startDataCall using startDataCallback.
+8. Application requests for add data filter and optionally gets asynchronous response using ResponseCallback.
+9. Application receives the status i.e. either SUCCESS or FAILED based on the execution of addDataRestrictFilter.
+10. Optionally, the application gets asynchronous response for addDataRestrictFilter using ResponseCallback.
+
+@subsubsection remove_data_filter_call_flow Call flow to Remove data restrict filter
+
+@anchor fig_remove_data_filter_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{remove_data_filter_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Remove data restrict filter call flow}
+  \label{fig_remove_data_filter_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{remove_data_filter_call_flow.png,Remove data restrict filter call flow,80,80,Remove data restrict filter call flow}
+
+1. Application requests data factory for data connection manager object.
+2. Data factory returns IDataConnectionManager object to application.
+3. Application requests data factory for data filter manager object.
+4. Data factory returns IDataFilterManager object to application.
+5. Application requests for start data call and optionally gets asynchronous response using startDataCallback.
+6. Application receives the status i.e. either SUCCESS or FAILED based on the execution of startDataCall.
+7. Optionally, the application gets asynchronous response for startDataCall using startDataCallback.
+8. Application requests for add data filter and optionally gets asynchronous response using ResponseCallback.
+9. Application receives the status i.e. either SUCCESS or FAILED based on the execution of removeAllDataRestrictFilters.
+10. Optionally, the application gets asynchronous response for removeAllDataRestrictFilters using ResponseCallback.
+
+@subsection data_networking_call_flow Data Networking Call Flow
+
+Application will get the following manager objects from data factory to configure networking.
+IVlanManager is used to access all VLAN APIs.
+INatManager is used to access all Static NAT APIs.
+IFirewallManager is used to access all Firewall APIs.
+
+@subsubsection data_vlan_manager_callflow Create VLAN and Bind it to PDN in data vlan manager call flow
+
+@anchor fig_data_vlan_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{create_and_bind_vlan_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Create VLAN and bind it to PDN for data VLAN manager call flow}
+  \label{fig_data_vlan_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{create_and_bind_vlan_call_flow.png,Create VLAN and Bind it to PDN in data vlan manager call flow,60,60,Create VLAN and bind it to PDN in data vlan manager call flow}
+
+1. Application requests data factory for data IVlanManager object.
+   1.1. If IVlanManager object does not exist, data factory will create new object.
+2. Data factory returns IVlanManager object to application.
+3. Application can use IVlanManager::isSubsystemReady to determine if the system is ready.
+4. The application receives the Status i.e. either true or false to indicate whether sub-system is ready or not.
+   4.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+   4.2. Application gets future for IVlanManager readiness.
+   4.3. Application wait for indefinitely for IVlanManager readiness.
+5. On Readiness, application calls IVlanManager::createVlan with assigned id, interface, and acceleration type.
+6. Application receives synchronous Status which indicates if the IVlanManager::createVlan request was sent successfully.
+7. Application is notified of the Status of the IVlanManager::createVlan request (either SUCCESS or FAILED) via the application-supplied callback.
+8. Application calls IVlanManager::bindWithProfile with Vlan id and profile id.
+9. Application receives synchronous Status which indicates if the IVlanManager::bindWithProfile request was sent successfully.
+7. Application is notified of the Status of the IVlanManager::bindWithProfile request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsubsection data_vlan_lan2lan_eap LAN-LAN VLAN Configuration from EAP usecase call flow
+
+@anchor fig_data_vlan_lan2lan_eap_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.25]{lan2lan_vlan_config_from_eap.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{LAN-LAN VLAN Configuration Usecase from EAP call flow}
+  \label{fig_data_vlan_lan2lan_eap_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{lan2lan_vlan_config_from_eap.png,LAN to LAN VLAN Configuration Usecase from EAP call flow,60,60,LAN to LAN VLAN Configuration Usecase from EAP call flow}
+
+1. Application requests data factory for data IVlanManager for local operation object.
+2. Application use IVlanManager::isSubsystemReady to determine if the system is ready.
+   2.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+3. On readiness, application calls IVlanManager::createVlan with USB interface, Vlan id 1 and no acceleration and wait for callback to indicate createVlan result
+4. Application requests data factory for data IVlanManager for remote operation object.
+5. Application use IVlanManager::isSubsystemReady to determine if the system is ready.
+   5.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+6. On readiness, application calls IVlanManager::createVlan with USB interface, Vlan id 1 and acceleration and wait for callback to indicate createVlan result
+7. Application calls IVlanManager::createVlan with ETH interface, Vlan id 1 and acceleration and wait for callback to indicate createVlan result
+
+@subsubsection data_vlan_lan2lan_a7 LAN-LAN VLAN Configuration from A7 usecase call flow
+
+@anchor fig_data_vlan_lan2lan_a7_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.25]{lan2lan_vlan_config_from_a7.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{LAN-LAN VLAN Configuration Usecase from A7 call flow}
+  \label{fig_data_vlan_lan2lan_a7_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{lan2lan_vlan_config_from_a7.png,LAN to LAN VLAN Configuration Usecase from A7 call flow,60,60,LAN to LAN VLAN Configuration Usecase from A7 call flow}
+
+1. Application requests data factory for data IVlanManager for local operation object.
+2. Application use IVlanManager::isSubsystemReady to determine if the system is ready.
+   2.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+3. On readiness, application calls IVlanManager::createVlan with USB interface, Vlan id 1 and acceleration and wait for callback to indicate createVlan result
+3. Application calls IVlanManager::createVlan with ETH interface, Vlan id 1 and acceleration and wait for callback to indicate createVlan result
+
+@subsubsection data_vlan_lan2wan_eap LAN-WAN VLAN Configuration from EAP usecase call flow
+
+@anchor fig_data_vlan_lan2wan_eap_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.22]{lan2wan_vlan_config_from_eap.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{LAN-WAN VLAN Configuration Usecase from EAP call flow}
+  \label{fig_data_vlan_lan2wan_eap_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{lan2wan_vlan_config_from_eap.png,LAN to WAN VLAN Configuration Usecase from EAP call flow,60,60,LAN to WAN VLAN Configuration Usecase from EAP call flow}
+
+1. Application requests data factory for data IVlanManager for local operation object.
+2. Application use IVlanManager::isSubsystemReady to determine if the system is ready.
+   2.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+3. On readiness, application calls IVlanManager::createVlan with USB interface, Vlan id 1 and no acceleration and wait for callback to indicate createVlan result
+4. Application requests data factory for data IVlanManager for remote operation object.
+5. Application use IVlanManager::isSubsystemReady to determine if the system is ready.
+   5.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+6. On readiness, application calls IVlanManager::createVlan with USB interface, Vlan id 1 and acceleration and wait for callback to indicate createVlan result
+7. Application calls IVlanManager::createVlan with ETH interface, Vlan id 1 and acceleration and wait for callback to indicate createVlan result
+8. Application calls IVlanManager::bindWithProfile with profile id to bind with and wait for callback to indicate bindWithProfile result
+If DMZ is needed:
+   9. Application requests data factory for data IFirewallManager object
+   10. Application can use IFirewallManager::isSubsystemReady to determine if the system is ready.
+   10.1. If FirewallManager is not ready, then the application could use onSubsystemReady which returns std::future and wait for future.
+   11. Application can use IFirewallManager::enableDmz with profile id and local address to be enable Dmz on
+12. Application calls getDataConnectionManager to get object of IDataConnectionManager
+13. Application can use IDataConnectionManager::isSubsystemReady to determine if the system is ready.
+   13.1. If DataConnectionManager is not ready, then the application could use onSubsystemReady which returns std::future and wait for future.
+14. Application can use IDataConnectionManager::startDataCall with profile id to start data call on, Ip Family type, operation Type and APN Name
+
+@subsubsection data_vlan_lan2wan_a7 LAN-WAN VLAN Configuration from A7 usecase call flow
+
+@anchor fig_data_vlan_lan2wan_a7_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.25]{lan2wan_vlan_config_from_a7.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{LAN-WAN VLAN Configuration Usecase from A7 call flow}
+  \label{fig_data_vlan_lan2wan_a7_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{lan2wan_vlan_config_from_a7.png,LAN to WAN VLAN Configuration Usecase from A7 call flow,60,60,LAN to WAN VLAN Configuration Usecase from A7 call flow}
+
+1. Application requests data factory for data IVlanManager for remote operation object.
+2. Application use IVlanManager::isSubsystemReady to determine if the system is ready.
+   2.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+3. On readiness, application calls IVlanManager::createVlan with USB interface, Vlan id 1 and acceleration and wait for callback to indicate createVlan result
+4. Application calls IVlanManager::createVlan with ETH interface, Vlan id 1 and acceleration and wait or callback to indicate createVlan result
+5. Application calls IVlanManager::bindWithProfile with profile id to bind with and wait for callback to indicate bindWithProfile result
+If DMZ is needed:
+   6. Application requests data factory for data IFirewallManager object
+   7. Application can use IFirewallManager::isSubsystemReady to determine if the system is ready.
+   7.1. If FirewallManager is not ready, then the application could use onSubsystemReady which returns std::future and wait for future.
+   8. Application can use IFirewallManager::enableDmz with profile id and local address to be enable Dmz on
+9. Application calls getDataConnectionManager to get object of IDataConnectionManager
+10. Application can use IDataConnectionManager::isSubsystemReady to determine if the system is ready.
+   10.1. If DataConnectionManager is not ready, then the application could use onSubsystemReady which returns std::future and wait for future.
+11. Application can use IDataConnectionManager::startDataCall with profile id to start data call on, Ip Family type, operation Type and APN Name
+
+
+@subsubsection data_static_nat_manager_callflow Create Static NAT entry in data Static NAT manager call flow
+
+@anchor fig_data_static_nat_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{create_snat_entry_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Create Static NAT entry for data NAT manager call flow}
+  \label{fig_data_static_nat_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{create_snat_entry_call_flow.png,Create Static NAT entry in data Static NAT manager call flow,60,60,Create Static NAT entry in data Static NAT manager call flow}
+
+1. Application requests data factory for data INatManager object.
+   1.1. If INatManager object does not exist, data factory will create new object.
+2. Data factory returns NatManager object to application.
+3. Application can use INatManager::isSubsystemReady to determine if the system is ready.
+4. The application receives the Status i.e. either true or false to indicate whether sub-system is ready or not.
+   4.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+   4.2. Application gets future for INatManager readiness.
+   4.3. Application wait for indefinitely for INatManager readiness.
+5. On Readiness, application calls INatManager::addStaticNatEntry with profileId, private IP address port, private port, global port and IP Protocol.
+6. Application receives synchronous Status which indicates if the INatManager::addStaticNatEntry request was sent successfully.
+7. Application is notified of the Status of the INatManager::addStaticNatEntry request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsubsection data_firewall_enablement_callflow Firewall Enablement in data Firewall manager call flow
+
+@anchor fig_data_firwall_enablement_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{enable_disable_firewall_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Firewall enablement in data Firewall manager call flow}
+  \label{fig_data_firwall_enablement_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{enable_disable_firewall_call_flow.png,Firewall Enablement in data Firewall manager call flow,60,60,Firewall Enablement in data Firewall manager call flow}
+
+1. Application requests data factory for data IFirewallManager object.
+   1.1. If IFirewallManager object does not exist, data factory will create new object.
+2. Data factory returns FirewallManager object to application.
+3. Application can use IFirewallManager::isSubsystemReady to determine if the system is ready.
+4. The application receives the Status i.e. either true or false to indicate whether sub-system is ready or not.
+   4.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+   4.2. Application gets future for IFirewallManager readiness.
+   4.3. Application wait for indefinitely for IFirewallManager readiness.
+5. On Readiness, application calls IFirewallManager::setFirewall with enable/disable and allow/drop packets.
+6. Application receives synchronous Status which indicates if the IFirewallManager::setFirewall request was sent successfully.
+7. Application is notified of the Status of the IFirewallManager::setFirewall request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsubsection data_add_firewall_entry_callflow Add Firewall Entry in data Firewall manager call flow
+
+@anchor fig_data_add_firwall_entry_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{add_firewall_entry_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Add Firewall entry in data Firewall manager call flow}
+  \label{fig_data_add_firwall_entry_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{add_firewall_entry_call_flow.png,Adding Firewall Entry in data Firewall manager call flow,60,60,Adding Firewall Entry in data Firewall manager call flow}
+
+1. Application requests data factory for data IFirewallManager object.
+   1.1. If IFirewallManager object does not exist, data factory will create new object.
+2. Data factory returns FirewallManager object to application.
+3. Application can use IFirewallManager::isSubsystemReady to determine if the system is ready.
+4. The application receives the Status i.e. either true or false to indicate whether sub-system is ready or not.
+   4.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+   4.2. Application gets future for IFirewallManager readiness.
+   4.3. Application wait for indefinitely for IFirewallManager readiness.
+5. On Readiness, application calls IFirewallManager::getNewFirewallEntry to get FirewallEntry object.
+6. Application receives Firewall Entry object.
+7. Using Firewall Entry object, application calls IFirewallEntry::getIProtocolFilter to get protocol filter object
+8. Application receives IpFilter object.
+9. Application populates FirewallEntry and IpFilter objects.
+10. Application calls IFirewallManager::addFirewallEntry with profileId and FirewallEntry to add firewall entry
+11. Application receives synchronous Status which indicates if addFirewallEntry was sent successfully
+12. Application is notified of the Status of the IFirewallManager::addFirewallEntry request (either SUCCESS or FAILED) via the application-supplied callback.
+
+
+@subsubsection data_set_firewall_dmz_callflow Set Firewall DMZ in data Firewall manager call flow
+
+@anchor fig_data_firwall_dmz_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{create_firewall_dmz_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Set Firewall DMZ in data Firewall manager call flow}
+  \label{fig_data_firwall_dmz_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{create_firewall_dmz_call_flow.png,Set Firewall DMZ in data Firewall manager call flow,60,60,Set Firewall DMZ in data Firewall manager call flow}
+
+1. Application requests data factory for data IFirewallManager object.
+   1.1. If IFirewallManager object does not exist, data factory will create new object.
+2. Data factory returns FirewallManager object to application.
+3. Application can use IFirewallManager::isSubsystemReady to determine if the system is ready.
+4. The application receives the Status i.e. either true or false to indicate whether sub-system is ready or not.
+   4.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+   4.2. Application gets future for IFirewallManager readiness.
+   4.3. Application wait for indefinitely for IFirewallManager readiness.
+5. On Readiness, application calls IFirewallManager::enableDmz with profileId and IP Address.
+6. Application receives synchronous Status which indicates if the IFirewallManager::enableDmz request was sent successfully.
+7. Application is notified of the Status of the IFirewallManager::enableDmz request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsubsection data_socks_enablement_callflow Socks Enablement in data Socks manager call flow
+
+@anchor fig_data_socks_enablement_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{enable_disable_Socks_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Socks enablement in data Socks manager call flow}
+  \label{fig_data_socks_enablement_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{enable_disable_Socks_call_flow.png,Socks Enablement in data Socks manager call flow,60,60,Socks Enablement in data Socks manager call flow}
+
+1. Application requests data factory for data ISocksManager object.
+   1.1. If ISocksManager object does not exist, data factory will create new object.
+2. Data factory returns SocksManager object to application.
+3. Application can use ISocksManager::isSubsystemReady to determine if the system is ready.
+4. The application receives the Status i.e. either true or false to indicate whether sub-system is ready or not.
+   4.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+   4.2. Application gets future for ISocksManager readiness.
+   4.3. Application wait for indefinitely for ISocksManager readiness.
+5. On Readiness, application calls ISocksManager::enableSocks with enable/disable.
+6. Application receives synchronous Status which indicates if the ISocksManager::enableSocks request was sent successfully.
+7. Application is notified of the Status of the ISocksManager::enableSocks request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsubsection data_l2tp_enablement_callflow L2TP Enablement and Configuration in data L2TP manager call flow
+
+@anchor fig_data_l2tp_enablement_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{enable_disable_l2tp_and_create_tunnel_session.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{L2TP enablement and Configuration in data L2TP manager call flow}
+  \label{fig_data_l2tp_enablement_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{enable_disable_l2tp_and_create_tunnel_session.png,L2TP Enablement and Configuration in data L2TP manager call flow,60,60,L2TP Enablement and Configuration in data L2TP manager call flow}
+
+1. Application requests data factory for data IL2tpManager object.
+   1.1. If IL2tpManager object does not exist, data factory will create new object.
+2. Data factory returns IL2tpManager object to application.
+3. Application can use IL2tpManager::isSubsystemReady to determine if the system is ready.
+4. The application receives the Status i.e. either true or false to indicate whether sub-system is ready or not.
+   4.1. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+   4.2. Application gets future for IL2tpManager readiness.
+   4.3. Application wait for indefinitely for IL2tpManager readiness.
+5. On Readiness, application calls IL2tpManager::setConfig with enable/disable, enable/disable Mss, enable/disable MTU size and MTU size
+6. Application receives synchronous Status which indicates if the IL2tpManager::setConfig request was sent successfully.
+7. Application is notified of the Status of the IL2tpManager::setConfig request (either SUCCESS or FAILED) via the application-supplied callback.
+8. Application calls IL2tpManager::addTunnel with all required configurations to setup tunnel and session
+9. Application receives synchronous Status which indicates if the IL2tpManager::addTunnel request was sent successfully.
+10. Application is notified of the Status of the IL2tpManager::addTunnel request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsubsection add_enable_software_bridge Call flow to add and enable software bridge
+
+@anchor fig_add_enable_software_bridge_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{data_software_bridge_add_enable.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to add and enable a software bridge}
+  \label{fig_add_enable_software_bridge_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{data_software_bridge_add_enable.png,Call flow to add and enable a software bridge,80,80,Call flow to add and enable a software bridge}
+
+1. Application requests data factory for Bridge manager object.
+2. Data factory returns IBridgeManager object to application.
+3. On readiness, application requests to add software bridge configuration for an interface, providing an optional asynchronous response callback using addBridge API.
+4. Application receives the synchronous status i.e. either SUCCESS or FAILED which indicates if the request was sent successfully.
+5. Optionally, the application gets asynchronous response for addBridge via the application-supplied callback.
+6. If the software bridge management is not enabled already, application requests to enable it, providing an optional asynchronous response callback using enableBridge API.
+   Please note that this step affects all the software bridges configured in the system.
+7. Application receives the status i.e. either SUCCESS or FAILED which indicates if the request was sent successfully.
+8. Optionally, the application gets asynchronous response for enableBridge via the application-supplied callback.
+
+@subsubsection remove_disable_software_bridge Call flow to remove and disable software bridge
+
+@anchor fig_remove_disable_software_bridge_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{data_software_bridge_remove_disable.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to remove and disable a software bridge}
+  \label{fig_remove_disable_software_bridge_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{data_software_bridge_remove_disable.png,Call flow to remove and disable a software bridge,80,80,Call flow to remove and disable a software bridge}
+
+1. Application requests data factory for Bridge manager object.
+2. Data factory returns IBridgeManager object to application.
+3. On readiness, application requests to get the list of software bridge configurations, providing an asynchronous response callback using requestBridgeInfo API.
+4. Application receives the synchronous status i.e. either SUCCESS or FAILED which indicates if the request was sent successfully.
+5. The application gets asynchronous response for requestBridgeInfo via the application-supplied callback.
+6. Application requests to remove software bridge configuration for an interface, providing an optional asynchronous response callback using removeBridge API.
+7. Application receives the synchronous status i.e. either SUCCESS or FAILED which indicates if the request was sent successfully.
+8. Optionally, the application gets asynchronous response for removeBridge via the application-supplied callback.
+9. If the software bridge management needs to be disabled, application requests to disable it, providing an optional asynchronous response callback using enableBridge API.
+   Please note that this step affects all the software bridges configured in the system.
+10. Application receives the status i.e. either SUCCESS or FAILED which indicates if the request was sent successfully.
+11. Optionally, the application gets asynchronous response for enableBridge via the application-supplied callback.
+
+@section cv2x_call_flows C-V2X
+
+@subsection cv2x_start_stop_callflow Start/Stop C-V2X Mode
+
+@anchor fig_cv2x_start_stop_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{cv2x_start_stop_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Start/Stop C-V2X Mode call flow}
+  \label{fig_cv2x_start_stop_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{cv2x_start_stop_call_flow.png,Start/Stop C-V2X mode,60,60,Start/Stop C-V2X mode}
+
+Note: In normal operation, applications do not need to start or stop C-V2X mode. The system is configured by default to start C-V2X mode at boot. We include the call flow below for the sake of completeness.
+
+1. Application requests C-V2X factory for a C-V2X Radio Manager.
+2. C-V2X factory return ICv2xRadioManager object to application.
+3. Application requests to put modem into C-V2X mode using startCv2x method.
+4. Application receives synchronous status which indicates if the start request was sent successfully.
+5. Application is notified of the status of the start request (either SUCCESS or FAILED) via the application-supplied callback.
+6. Application requests to disable C-V2X mode using stopCv2x method.
+7. Application receives synchronous status which indicates if the stop request was sent successfully.
+8. Application is asynchronously notified of the status of the stop request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection cv2x_radio_manager_callflow C-V2X Radio Manager API
+
+@anchor fig_cv2x_radio_manager_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{cv2x_radio_manager_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{C-V2X Radio Manager call flow}
+  \label{fig_cv2x_radio_manager_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{cv2x_radio_manager_call_flow.png,C-V2X Radio Manager call flow,60,60,C-V2X Radio Manager call flow}
+
+API for C-V2X Radio Manager
+
+1. Application requests C-V2X factory for a C-V2X Radio Manager.
+2. C-V2X factory return ICv2xRadioManager object to application.
+3. Application requests current C-V2X status using requestCv2xStatus method.
+4. Application receives synchronous status (either SUCCESS or FAILED) which indicates if the request was sent successfully.
+5. Application is asynchronously notified of the status of the request (either SUCCESS or FAILED) via the application-supplied callback. If SUCCESS, the requested C-V2X status is returned in the callback.
+6. Application requests to update the C-V2X configuration by calling updateConfiguration and supplying it with a path to the new config XML file.
+7. Application receives synchronous status (either SUCCESS or FAILED) which indicates if the request was sent successfully.
+8. Application is asynchronously notiifed of the status of the request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection cv2x_radio_initialization_callflow C-V2X Radio Initialization
+
+@anchor fig_cv2x_radio_initialization_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{cv2x_radio_initialization_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{C-V2X Radio Initialization call flow}
+  \label{fig_cv2x_radio_initialization_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{cv2x_radio_initialization_call_flow.png,C-V2X Radio Initialization call flow,60,60,C-V2X Radio Initialization call flow}
+
+This call flow diagram describes the sequence of steps for initialing the ICv2xRadio object. Applications must perform this sequence before calling any other methods on the object. Note: for simplicity's sake, we omit this sequence in the remaining C-V2X Radio call flow diagrams but it's inclusion is implied.
+
+1. Application requests C-V2X factory for a C-V2X Radio Manager.
+2. C-V2X factory return ICv2xRadioManager object to application.
+3. Application requests C-V2X Radio from ICv2xRadioManager.
+4. C-V2X Radio Manager returns ICv2xRadio object.
+5. Application queries C-V2X Radio's readiness state isReady() method.
+6. C-V2X Radio returns a bool indicating whether it is ready to be used.
+7. If the C-V2X Radio is not ready, the application calls onReady() method.
+8. The C-V2X Radio returns a future object.
+9. Appliction calls future's get() method and blocks until the C-V2X Radio has completed its initialization steps. The return value of get() indicates the status of the initialization (eitehr SUCCESS or FAILED).
+
+@subsection cv2x_radio_rx_sub_callflow C-V2X Radio RX subscription
+
+@anchor fig_cv2x_radio_rx_sub_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{cv2x_radio_rx_sub_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{C-V2X Radio RX subscription call flow}
+  \label{fig_cv2x_radio_rx_sub_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{cv2x_radio_rx_sub_call_flow.png,C-V2X Radio RX subscription call flow,60,60,C-V2X Radio RX subscription call flow}
+
+1. Application requests C-V2X factory for a C-V2X Radio Manager.
+2. C-V2X factory return ICv2xRadioManager object to application.
+3. Application requests C-V2X Radio from ICv2xRadioManager.
+4. C-V2X Radio Manager returns ICv2xRadio object.
+5. Application requests a new RX subscription from the C-V2X Radio using createRxSubscription method.
+6. Application receives synchronous status (either SUCCESS or FAILED) indicating whether the request was sent successfully.
+7. C-V2X Radoi sends asynchronous notification via the callback function on the status of the request. If SUCCESS, the RX subscription is returned in the callback.
+8. Application requests to close the RX subscription.
+9. Application receives synchronous status (either SUCCESS or FAILED) indicating whether the request was sent successfully.
+10. C-V2X Radio sends asynchronous notification via the callback (if a callback was specified) indicating the status of the request.
+
+@subsection cv2x_radio_event_flow_callflow C-V2X Radio TX event-driven flow
+
+@anchor fig_cv2x_radio_event_flow_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{cv2x_radio_event_flow_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{C-V2X Radio TX event-driven flow call flow}
+  \label{fig_cv2x_radio_event_flow_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{cv2x_radio_event_flow_call_flow.png,C-V2X Radio TX event-driven flow call flow,60,60,C-V2X Radio TX event-driven flow call flow}
+
+1. Application requests C-V2X factory for a C-V2X Radio Manager.
+2. C-V2X factory return ICv2xRadioManager object to application.
+3. Application requests C-V2X Radio from ICv2xRadioManager.
+4. C-V2X Radio Manager returns ICv2xRadio object.
+5. Application requests a new TX event-driven flow from the C-V2X Radio using createTxEventFlow method.
+6. Application receives synchronous status (either SUCCESS or FAILED) indicating whether the request was sent successfully.
+7. C-V2X Radio sends asynchronous notification via the callback function on the status of the request. If SUCCESS, the TX event-driven flow is returned in the callback.
+8. Application requests to close the TX event-driven flow.
+9. Application receives synchronous status (either SUCCESS or FAILED) indicating whether the request was sent successfully.
+10. C-V2X Radio sends asynchronous notification via the callback (if a callback was specified) indicating the status of the request.
+
+@subsection cv2x_radio_sps_flow_callflow C-V2X Radio TX SPS flow
+
+@anchor fig_cv2x_radio_sps_flow_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.41]{cv2x_radio_sps_flow_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{C-V2X Radio SPS flow call flow}
+  \label{fig_cv2x_radio_sps_flow_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{cv2x_radio_sps_flow_call_flow.png,C-V2X Radio TX SPS flow call flow,60,60,C-V2X Radio TX SPS flow call flow}
+
+1. Application requests C-V2X factory for a C-V2X Radio Manager.
+2. C-V2X factory return ICv2xRadioManager object to application.
+3. Application requests C-V2X Radio from ICv2xRadioManager.
+4. C-V2X Radio Manager returns ICv2xRadio object.
+5. Application requests a new TX SPS flow from the C-V2X Radio using createTxSPSFlow method. The application can also specify an optional event flow.
+6. Application receives synchronous status (either SUCCESS or FAILED) indicating whether the request was sent successfully.
+7. C-V2X Radio sends asynchronous notification via the callback function. The callback will return the SPS flow and its status as well as the optional event-driven flow and its status.
+8. Application requests to change the SPS parameters using the changeSpsFlowInfo method.
+9. Application received synchronous status (either SUCCESS or FAILED) indicating whether the request was sent successfully.
+10. C-V2X Radio sends asynchronous notification via the callback (if callback was specified) indicating the status of the request.
+11. Application requests to close the SPS flow.
+12. Application receives synchronous status (either SUCCESS or FAILED) indicating whether the request was sent successfully.
+13. C-V2X Radio sends asynchronous notification via the callback (if a callback was specified) indicating the status of the request.
+14. Application requests to close optional event-driven flow (if one was created).
+15. Application receives synchronous status (either SUCCESS or FAILED) indicating whether the request was sent successfully.
+16. C-V2X Radio sends asynchronous notification via the callback (if a callback was specified) indicating the status of the request.
+
+@section audio_call_flows Audio
+
+@subsection audio_manager_api_callflow Audio Manager API call flow
+
+@anchor fig_audio_manager_api_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_manager_api_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Audio Manager API call flow}
+  \label{fig_audio_manager_api_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_manager_api_call_flow.png,Audio Manager API call flow,80,80,Audio Manager API call flow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. Application can use IAudioManager::isSubsystemReady to determine if the system is ready.
+4. The application receives the Status i.e. either true or false to indicate whether sub-system is ready or not.
+5. If it is not ready, then the application could use onSubsystemReady which returns std::future.
+6. AudioManager notifies the application when the subsystem is ready through the std::future object.
+7. The application waits until the asynchronous operation i.e onSubsystemReady completes.
+8. On Readiness, Application requests supported device types using getDevices method.
+9. Application receives synchronous Status which indicates if the getDevices request was sent successfully.
+10. Application is notified of the Status of the getDevices request (either SUCCESS or FAILED) via the application-supplied callback, with array of supported device types.
+11. Application requests supported stream types using getStreamTypes method.
+12. Application receives synchronous Status which indicates if the getStreamTypes request was sent successfully.
+13. Application is notified of the Status of the getStreamTypes request (either SUCCESS or FAILED) via the application-supplied callback, with array of supported stream types.
+14. Application requests create audio stream using createStream method.
+15. Application receives synchronous Status which indicates if the createStream request was sent successfully.
+16. Application is notified of the Status of the createStream request (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface.
+17. Application requests delete audio stream using deleteStream method.
+18. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+19. Application is notified of the Status of the deleteStream request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_voicecall_start_stop_callflow Audio Voice Call Start/Stop call flow
+
+@anchor fig_audio_voicecall_start_stop_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_voicecall_start_stop_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Audio Voice Call Start/Stop call flow}
+  \label{fig_audio_voicecall_start_stop_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_voicecall_start_stop_call_flow.png,Audio Voice Call Start/Stop call flow,80,80,Audio Voice Call Start/Stop call flow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests create audio voice stream using createStream method with streamType as VOICE_CALL.
+4. Application receives synchronous Status which indicates if the createStream request was sent successfully.
+5. Application is notified of the Status of the createStream request (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioVoiceStream.
+6. Application requests start audio stream using startAudio method on IAudioVoiceStream.
+7. Application receives synchronous Status which indicates if the startAudio request was sent successfully.
+8. Application is notified of the Status of the startAudio request (either SUCCESS or FAILED) via the application-supplied callback.
+9. Application requests stop audio stream using stopAudio method on IAudioVoiceStream.
+10. Application receives synchronous Status which indicates if the stopAudio request was sent successfully.
+11. Application is notified of the Status of the stopAudio request (either SUCCESS or FAILED) via the application-supplied callback.
+12. Application requests delete audio stream using deleteStream method.
+13. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+14. Application is notified of the Status of the deleteStream request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_voicecall_device_switch_callflow Audio Voice Call Device Switch call flow
+
+@anchor fig_audio_voicecall_device_switch_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_voicecall_device_switch_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Audio Voice Call Device Switch call flow}
+  \label{fig_audio_voicecall_device_switch_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_voicecall_device_switch_call_flow.png,Audio Voice Call Device Switch call flow,80,80,Audio Voice Call Device Switch call flow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests create audio voice stream using createStream method with streamType as VOICE_CALL.
+4. Application receives synchronous Status which indicates if the createStream request was sent successfully.
+5. Application is notified of the Status of the createStream request (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioVoiceStream.
+6. Application requests start audio stream using startAudio method on IAudioVoiceStream.
+7. Application receives synchronous Status which indicates if the startAudio request was sent successfully.
+8. Application is notified of the Status of the startAudio request (either SUCCESS or FAILED) via the application-supplied callback.
+9. Application requests new device routing of stream using setDevice method on IAudioVoiceStream.
+10. Application receives synchronous Status which indicates if the setDevice request was sent successfully.
+11. Application is notified of the Status of the setDevice request (either SUCCESS or FAILED) via the application-supplied callback.
+12. Application query device stream routed to using getDevice method on IAudioVoiceStream.
+13. Application receives synchronous Status which indicates if the getDevice request was sent successfully.
+14. Application is notified of the Status of the getDevice request (either SUCCESS or FAILED) via the application-supplied callback, along with device types.
+15. Application requests stop audio stream using stopAudio method on IAudioVoiceStream.
+16. Application receives synchronous Status which indicates if the stopAudio request was sent successfully.
+17. Application is notified of the Status of the stopAudio request (either SUCCESS or FAILED) via the application-supplied callback.
+18. Application requests delete audio stream using deleteStream method.
+19. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+20. Application is notified of the Status of the deleteStream request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_voicecall_volume_mute_control_callflow Audio Voice Call Volume/Mute control call flow
+
+@anchor fig_audio_voicecall_volume_mute_control_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_voicecall_volume_mute_control_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Audio Voice Call Volume/Mute control call flow}
+  \label{fig_audio_voicecall_volume_mute_control_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_voicecall_volume_mute_control_call_flow.png,Audio Voice Call Volume/Mute control call flow,80,80,Audio Voice Call Volume/Mute control call flow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests create audio voice stream using createStream method with streamType as VOICE_CALL.
+4. Application receives synchronous Status which indicates if the createStream request was sent successfully.
+5. Application is notified of the Status of the createStream request (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioVoiceStream.
+6. Application requests start audio stream using startAudio method on IAudioVoiceStream.
+7. Application receives synchronous Status which indicates if the startAudio request was sent successfully.
+8. Application is notified of the Status of the startAudio request (either SUCCESS or FAILED) via the application-supplied callback.
+9. Application requests new volume on stream using setVolume method on IAudioVoiceStream for specified direction.
+10. Application receives synchronous Status which indicates if the setVolume request was sent successfully.
+11. Application is notified of the Status of the setVolume request (either SUCCESS or FAILED) via the application-supplied callback.
+12. Application query volume on stream using getVolume method on IAudioVoiceStream for specified direction.
+13. Application receives synchronous Status which indicates if the getVolume request was sent successfully.
+14. Application is notified of the Status of the getVolume request (either SUCCESS or FAILED) via the application-supplied callback for specified direction with volume details.
+15. Application requests new mute on stream using setMute method on IAudioVoiceStream for specified direction.
+16. Application receives synchronous Status which indicates if the setMute request was sent successfully.
+17. Application is notified of the Status of the setMute request (either SUCCESS or FAILED) via the application-supplied callback.
+18. Application query mute details on stream using getMute method on IAudioVoiceStream for specified direction.
+19. Application receives synchronous Status which indicates if the getMute request was sent successfully.
+20. Application is notified of the Status of the getMute request (either SUCCESS or FAILED) via the application-supplied callback for specified direction with mute details.
+21. Application requests stop audio stream using stopAudio method on IAudioVoiceStream.
+22. Application receives synchronous Status which indicates if the stopAudio request was sent successfully.
+23. Application is notified of the Status of the stopAudio request (either SUCCESS or FAILED) via the application-supplied callback.
+24. Application requests delete audio stream using deleteStream method.
+25. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+26. Application is notified of the Status of the deleteStream request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_voicecall_dtmf_play_callflow Call flow to play DTMF tone
+
+@anchor fig_audio_voicecall_dtmf_play_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_voicecall_dtmf_play_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to play DTMF tone}
+  \label{fig_audio_voicecall_dtmf_play_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_voicecall_dtmf_play_call_flow.png,Call flow to play DTMF tone,80,80,Call flow to play DTMF tone}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests to create a voice stream with streamType as VOICE_CALL.
+4. Application receives synchronous status which indicates if the createStream request was sent successfully.
+5. Application is notified of the createStream request status (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioVoiceStream.
+6. Application requests to start voice session using startAudio method on IAudioVoiceStream.
+7. Application receives synchronous status which indicates if the startAudio request was sent successfully.
+8. Application is notified of the startAudio request status (either SUCCESS or FAILED) via the application-supplied callback.
+9. Application requests to play a DTMF tone associated with the voice session
+10. Application receives synchronous status which indicates if the playDtmfTone request was sent successfully.
+11. Application is notified of the playDtmfTone request status (either SUCCESS or FAILED) via the application-supplied callback.
+12. Application can optionally stop the DTMF tone being played, before its duration expires.
+13. Application receives synchronous status which indicates if the stopDtmfTone request was sent successfully.
+14. Application is notified of the stopDtmfTone request status (either SUCCESS or FAILED) via the application-supplied callback.
+15. Application requests to stop the voice session using stopAudio method on IAudioVoiceStream.
+16. Application receives synchronous Status which indicates if the stopAudio request was sent successfully.
+17. Application is notified of the stopAudio request status(either SUCCESS or FAILED) via the application-supplied callback.
+18. Application requests delete audio stream using deleteStream method.
+19. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+20. Application is notified of the deleteStream request status(either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_voicecall_dtmf_detect_callflow Call flow to detect DTMF tones
+
+@anchor fig_audio_voicecall_dtmf_detect_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_voicecall_dtmf_detect_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to detect DTMF tone}
+  \label{fig_audio_voicecall_dtmf_detect_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_voicecall_dtmf_detect_call_flow.png,Call flow to detect DTMF tone,80,80,Call flow to detect DTMF tone}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests to create a voice stream with streamType as VOICE_CALL.
+4. Application receives synchronous status which indicates if the createStream request was sent successfully.
+5. Application is notified of the createStream request status (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioVoiceStream.
+6. Application requests to start voice session using startAudio method on IAudioVoiceStream.
+7. Application receives synchronous status which indicates if the startAudio request was sent successfully.
+8. Application is notified of the startAudio request status (either SUCCESS or FAILED) via the application-supplied callback.
+9. Application registers a listener for getting notifications when DTMF tones are detected
+10. Application receives synchronous status which indicates if the registerListener request was sent successfully.
+11. Application is notified of the registerListener request status (either SUCCESS or FAILED) via the application-supplied callback.
+12. Application receives onDtmfToneDetection notification when a DTMF tone is detected in the active voice call session
+13. Application deregisters a listener to stop getting notifications
+14. Application receives synchronous status which indicates if the deRegisterListener request was sent successfully.
+15. Application requests to stop the voice session using stopAudio method on IAudioVoiceStream.
+16. Application receives synchronous Status which indicates if the stopAudio request was sent successfully.
+17. Application is notified of the stopAudio request status(either SUCCESS or FAILED) via the application-supplied callback.
+18. Application requests delete audio stream using deleteStream method.
+19. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+20. Application is notified of the deleteStream request status(either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_playback_callflow Audio Playback call flow
+
+@anchor fig_audio_playback_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_playback_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Audio Playback call flow}
+  \label{fig_audio_playback_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_playback_call_flow.png,Audio Playback call flow,80,80,Audio Playback call flow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests create audio playback stream using createStream method with streamType as PLAY.
+4. Application receives synchronous Status which indicates if the createStream request was sent successfully.
+5. Application is notified of the Status of the createStream request (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioPlayStream.
+6. Application requests stream buffer#1 using getStreamBuffer method on IAudioPlayStream.
+7. Application receives IStreamBuffer if Success.
+8. Application requests stream buffer#2 using getStreamBuffer method on IAudioPlayStream.
+9. Application receives IStreamBuffer if Success.
+10. Application writes audio samples on buffer#1 using getRawBuffer method on IStreamBuffer.
+11. Application writes buffer#1 on Playback session using write method on IAudioPlayStream.
+12. Application receives synchronous Status which indicates if the write request was sent successfully.
+13. Application writes audio samples on buffer#2 using getRawBuffer method on IStreamBuffer.
+14. Application writes buffer#2 on Playback session using write method on IAudioPlayStream.
+15. Application receives synchronous Status which indicates if the write request was sent successfully.
+16. Application is notified of the buffer#1 write Status (either SUCCESS or FAILED) via the application-supplied write callback with successful bytes written.
+17. Application is notified of the buffer#2 write Status (either SUCCESS or FAILED) via the application-supplied write callback with successful bytes written.
+18. Application requests delete audio stream using deleteStream method.
+19. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+20. Application is notified of the Status of the deleteStream request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_capture_callflow Audio Capture call flow
+
+@anchor fig_audio_capture_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_capture_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Audio Capture call flow}
+  \label{fig_audio_capture_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_capture_call_flow.png,Audio Capture call flow,80,80,Audio Capture call flow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests create audio capture stream using createStream method with streamType as CAPTURE.
+4. Application receives synchronous Status which indicates if the createStream request was sent successfully.
+5. Application is notified of the Status of the createStream request (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioCaptureStream.
+6. Application requests stream buffer#1 using getStreamBuffer method on IAudioCaptureStream.
+7. Application receives IStreamBuffer if Success.
+8. Application requests stream buffer#2 using getStreamBuffer method on IAudioCaptureStream.
+9. Application receives IStreamBuffer if Success.
+10. Application decides read sample size.
+11. Application issue read audio samples on buffer#1 using read method on IAudioCaptureStream.
+12. Application receives synchronous Status which indicates if the read request was sent successfully.
+13. Application issue read audio samples on buffer#2 using read method on IAudioCaptureStream.
+14. Application receives synchronous Status which indicates if the read request was sent successfully.
+15. Application is notified of the buffer#1 write Status (either SUCCESS or FAILED) via the application-supplied read callback with successful bytes read.
+16. Application is notified of the buffer#2 write Status (either SUCCESS or FAILED) via the application-supplied read callback with successful bytes read.
+17. Application requests delete audio stream using deleteStream method.
+18. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+19.  Application is notified of the Status of the deleteStream request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_tone_generator_play_stop_callflow Audio Tone Generator call flow
+
+@anchor fig_audio_tone_generator_play_stop_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_tone_generation_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to play/stop tone on a sink device}
+  \label{fig_audio_tone_generator_play_stop_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_tone_generation_callflow.png,Audio Tone Generator call flow,80,80,Audio Tone Generator call flow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests to create a tone generator stream with streamType as TONE_GENERATOR.
+4. Application receives synchronous status which indicates if the createStream request was sent successfully.
+5. Application is notified of the createStream request status (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioToneGeneratorStream.
+6. Application requests to play tone using playTone method on IAudioToneGeneratorStream.
+7. Application receives synchronous status which indicates if the playTone request was sent successfully.
+8. Application is notified of the playTone request status (either SUCCESS or FAILED) via the application-supplied callback.
+9. Application can optionally stop the tone being played, before its duration expires.
+10. Application receives synchronous status which indicates if the stopTone request was sent successfully.
+11. Application is notified of the stopTone request status (either SUCCESS or FAILED) via the application-supplied callback.
+12. Application requests delete audio stream using deleteStream method.
+13. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+14. Application is notified of the deleteStream request status(either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_loopback_start_stop_callflow Audio Loopback call flow
+
+@anchor fig_audio_loopback_start_stop_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_loopback_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to start/stop loopback between source and sink devices}
+  \label{fig_audio_loopback_start_stop_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_loopback_callflow.png,Audio Loopback call flow,80,80,Audio Loopback call flow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests to create a loopback stream with streamType as LOOPBACK.
+4. Application receives synchronous status which indicates if the createStream request was sent successfully.
+5. Application is notified of the createStream request status (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioLoopbackStream.
+6. Application requests to start loopback using startLoopback method on IAudioLoopbackStream.
+7. Application receives synchronous status which indicates if the startLoopback request was sent successfully.
+8. Application is notified of the startLoopback request status (either SUCCESS or FAILED) via the application-supplied callback.
+9. Application requests to stop loopback using stopLoopback method on IAudioLoopbackStream.
+10. Application receives synchronous status which indicates if the stopLoopback request was sent successfully.
+11. Application is notified of the stopLoopback request status (either SUCCESS or FAILED) via the application-supplied callback.
+12. Application requests delete audio stream using deleteStream method.
+13. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+14. Application is notified of the deleteStream request status(either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection compressed_audio_format_playback_callflow Compressed audio format playback call flow
+
+@anchor fig_compressed_audio_format_playback_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{compressed_audio_format_playback_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to play Compressed audio format}
+  \label{fig_compressed_audio_format_playback_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{compressed_audio_format_playback.png,Audio Compressed Audio Format Playback call flow,80,80,Compressed Audio Format Playback call flow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests to create a play stream with streamType as PLAY.
+4. Application receives synchronous status which indicates if the createStream request was sent successfully.
+5. Application is notified of the createStream request status (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioPlayStream.
+6. Application requests to write buffer using write method on IAudioPlayStream.
+7. Application receives synchronous status which indicates if the write request was sent successfully.
+8. Application is notified of the write request status (either SUCCESS or FAILED) via the application-supplied callback along with number of bytes written.
+9. Application is notified of when pipeline is ready to accept new buffer if callback returns with error that number of bytes written are not equal to bytes requested.
+10. Application send request to stop playback using stopAudio method of IAudioPlayStream.
+11. Application receives synchronous status which indicates if the stopAudio request was sent successfully.
+12. Application is notified of the stopAudio request status (either SUCCESS or FAILED) via the application-supplied callback.
+13. Appication is notified via indication that playback is stopped if StopType is STOP_AFTER_PLAY.
+14. Application requests delete audio stream using deleteStream method.
+15. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+16. Application is notified of the deleteStream request status(either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_transcoding_callflow Audio Transcoding Operation Callflow
+
+@anchor fig_audio_transcoding_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.45]{audio_transcoding_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Audio Transcoding Operation Callflow}
+  \label{fig_audio_transcoding_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_transcoding_callflow.png,Audio Transcoding Operation Callflow,80,80,Audio Transcoding Operation Callflow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests to create a transcoder.
+4. Application receives synchronous status which indicates if the createTranscoder request was sent successfully.
+5. Application is notified of the createTranscoder request status (either SUCCESS or FAILED) via the application-supplied callback, with pointer to transcoder interface refering to ITranscoder.
+6. Application requests to read buffer using read method on ITranscoder.
+7. Application receives synchronous status which indicates if the read request was sent successfully.
+8. Application is notified of the read request status (either SUCCESS or FAILED) via the application-supplied callback along with isLastBuffer flag which indicates whether the buffer is last buffer to read or not.
+9. Application requests to write buffer using write method on ITranscoder.
+10. Application receives synchronous status which indicates if the write request was sent successfully.Application need to mark the isLastBuffer flag, whenever it is providing the last buffer to be write.
+11. Application is notified of the write request status (either SUCCESS or FAILED) via the application-supplied callback along with number of bytes written.
+12. Application is notified of when pipeline is ready to accept new buffer if callback returns with error that number of bytes written are not equal to bytes requested.
+13. Once transcoding done, Application requests to tearDown transcoder as transcoder can not be used for multiple transcoding operations.
+14. Application receives synchronous status which indicates if the tearDown request was sent successfully.
+15. Application is notified of the tearDown request status (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection audio_playback_on_voice_paths_callflow Compressed audio format playback on Voice Paths Callflow
+
+@anchor fig_compressed_audio_format_playback_on_voice_paths_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.38]{compressed_audio_format_playback_on_voice_paths_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Compressed audio format playback on Voice Paths Callflow}
+  \label{fig_compressed_audio_format_playback_on_voice_paths_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{audio_playback_on_voice_paths_callflow.png,Compressed audio format playback on Voice Paths Callflow,80,80,Compressed audio format playback on Voice Paths Callflow}
+
+1. Application requests Audio factory for an Audio Manager.
+2. Audio factory return IAudioManager object to application.
+3. On Readiness, Application requests to create a play stream with streamType as PLAY, voicePaths direction as TX or RX and no device is selected.
+4. Application receives synchronous status which indicates if the createStream request was sent successfully.
+5. Application is notified of the createStream request status (either SUCCESS or FAILED) via the application-supplied callback, with pointer to stream interface refering to IAudioPlayStream.
+6. Application requests to write buffer using write method on IAudioPlayStream. It needs an active voice session to play over voice paths, refer IAudioVoiceStream for more details on how to create voice stream.
+7. Application receives synchronous status which indicates if the write request was sent successfully.
+8. Application is notified of the write request status (either SUCCESS or FAILED) via the application-supplied callback along with number of bytes written.
+9. Application is notified of when pipeline is ready to accept new buffer if callback returns with error that number of bytes written are not equal to bytes requested.
+10. Application send request to stop playback using stopAudio method of IAudioPlayStream.
+11. Application receives synchronous status which indicates if the stopAudio request was sent successfully.
+12. Application is notified of the stopAudio request status (either SUCCESS or FAILED) via the application-supplied callback.
+13. Appication is notified via indication that playback is stopped if StopType is STOP_AFTER_PLAY.
+14. Application requests delete audio play stream using deleteStream method.
+15. Application receives synchronous Status which indicates if the deleteStream request was sent successfully.
+16. Application is notified of the deleteStream request status(either SUCCESS or FAILED) via the application-supplied callback.
+
+@section thermal_manager_call_flow Thermal manager call flow
+
+Thermal manager provides APIs to get list of thermal zones and cooling devices. It also contains APIs
+to get a particular thermal zone and a particular cooling device details with the given Id.
+
+@anchor fig_thermal_manager_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{thermal_manager_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Thermal manager call flow}
+  \label{fig_thermal_manager_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{thermal_manager_call_flow.png,Thermal manager call flow,80,80,Thermal manager call flow}
+
+1. Application requests Thermal factory for Thermal Manager.
+2. Thermal factory returns IThermalManager object to application.
+3. Application sends request to get all thermal zones using IThermalManager object.
+4. Thermal manager returns the list of thermal zones to the application.
+5. Application requests for a particular thermal zone details by mentioning the thermal zone Id.
+6. Application receives thermal zone details with the given Id from thermal manager.
+7. Application sends request to get all cooling devices using IThermalManager object.
+8. Thermal manager returns the list of cooling devices to the application.
+9. Application requests for a particular cooling device details by passing the cooling device Id.
+10. Thermal Manager sends cooling device details with the given Id to the application.
+
+@section thermal_shutdown_manager_call_flow Thermal shutdown management
+
+Thermal shutdown manager provides APIs to set/get auto thermal shutdown modes. It also has listener interface for notifications.
+Application will get the Thermal-shutdown manager object from thermal factory. The application can register a listener for
+updates in thermal auto shutdown modes and its management service status. Also there is provision to set the desired
+thermal auto-shutdown mode.
+
+When application is notifed of service being unavailable, the thermal auto-shutdown mode updates are inactive. After service
+becomes available, the existing listener registrations will be maintained.
+
+As a reference, auto-shutdown management in an eCall application is described in the below sections.
+
+@subsection thermal_shutdown_manager_listener_call_flow Call flow to register/remove listener for Thermal auto-shutdown mode updates.
+
+@anchor fig_thermal_shutdown_manager_listener_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{thermal_shutdown_mode_notification_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to register/remove listener for Thermal shutdown manager}
+  \label{fig_thermal_shutdown_manager_listener_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{thermal_shutdown_manager_listener_callflow.png,Call flow to register/remove listener for Thermal shutdown manager,80,80,Register/Remove listener for Thermal shutdown manager call flow}
+
+1. Application requests thermal factory for Thermal Shutdown Manager.
+2. Thermal factory returns IThermalShutdownManager object using which application will register or remove a listener.
+3. Application can register a listener for getting notifications on Thermal auto-shutdown mode updates.
+4. Status of register listener i.e. either SUCCESS or FAILED will be returned to the application.
+5. Application recieves a notification that thermal auto-shutdown mode is disabled.
+6. Application recieves a notification that thermal auto-shutdown mode is going to enabled soon. The exact duration is also recieved as part of notification.
+7. Application recieves a notification that thermal auto-shutdown mode is enabled.
+8. Application can remove listener.
+9. Status of remove listener i.e. either SUCCESS or FAILED will be returned to the application.
+
+@subsection thermal_shutdown_manager_commands_callflow Call flow to set/get the Thermal auto-shutdown mode
+
+@anchor fig_thermal_shutdown_manager_commands_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{thermal_shutdown_mode_command_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to set/get the Thermal auto-shutdown mode}
+  \label{fig_thermal_shutdown_manager_commands_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{thermal_shutdown_mode_command_callflow.png, Call flow to set/get the Thermal auto-shutdown mode,80,80,Call flow to set/get the Thermal auto-shutdown mode}
+
+1. Application requests thermal factory for Thermal Shutdown Manager object using which application will set/get the thermal auto-shutdown mode.
+2. Thermal factory returns IThermalShutdownManager object.
+3. Application can query the thermal auto-shutdown mode.
+4. Application receives synchronous status which indicates if the request was sent successfully.
+5. Application receives the auto-shutdown mode asynchronously.
+6. Application can set the thermal auto-shutdown mode to ENABLE or DISABLE.
+7. Application receives synchronous status which indicates if the request was sent successfully.
+8. Optionally, the response to setAutoShutdownMode request can be received by the application.
+
+@subsection thermal_shutdown_manager_eCall_app_call_flow Call flow to manage thermal auto-shutdown from an eCall application.
+
+@anchor fig_thermal_shutdown_manager_eCall_app_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{thermal_shutdown_mode_eCall_app_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to manage thermal auto-shutdown from an eCall application}
+  \label{fig_thermal_shutdown_manager_eCall_app_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{thermal_shutdown_mode_eCall_app_callflow.png,Call flow to manage thermal auto-shutdown from an eCall application,80,80,Manage thermal auto-shutdown from an eCall application}
+
+1. When eCall is triggered, application requests thermal factory for Thermal Shutdown Manager.
+2. Thermal factory returns IThermalShutdownManager object.
+3. Application can register a listener for getting notifications on Thermal auto-shutdown mode updates.
+4. Status of register listener i.e. either SUCCESS or FAILED will be returned to the application.
+5. Application disables auto-shutdown using setAutoShutdownMode API, to prevent a possible thermal auto-shutdown during eCall.
+6. Application receives synchronous status which indicates if the request was sent successfully.
+7. Optionally, the response to setAutoShutdownMode request can be received by the application.
+8. Application recieves a notification that thermal auto-shutdown mode is disabled.
+9. Application receives an imminent auto-shutdown enable notification and system will attempt to enable auto-shutdown after a certain period.
+   This notification is received if application does not enable auto-shutdown due to an active eCall.
+10. If the eCall is still active, the application disables auto-shutdown before it gets enabled automatically.
+11. Application receives synchronous status which indicates if the request was sent successfully.
+12. Optionally, the response to setAutoShutdownMode request can be received by the application.
+13. Application recieves a notification that thermal auto-shutdown mode is disabled.
+    Steps 9 to 13 are repeated as long as the eCall is active.
+14. When the eCall is completed, the application immediately enables auto-shutdown using setAutoShutdownMode API.
+15. Application receives synchronous status which indicates if the request was sent successfully.
+16. Optionally, the response to setAutoShutdownMode request can be received by the application.
+17. Application recieves a notification that thermal auto-shutdown mode is enabled.
+18. Application can remove listener.
+19. Status of remove listener i.e. either SUCCESS or FAILED will be returned to the application.
+
+
+@section tcuactivity_management_call_flow TCU Activity Management
+
+Application will get appropriate TCU-activity manager object from power factory. A Master/Slave client can register a listener for updates on TCU-activity state and its management service status. A Master client application can also set the system to a desired activity state.
+When the application is notified about the service being unavailable, the TCU-activity state notifications will be inactive. After the service becomes available, the existing listener registrations will be maintained.
+
+The framework can work in ACTIVE or PASSIVE mode, based on the configuration of TCU-activity management service. In ACTIVE mode, the management service leads the system into desired activity state after receiving the acknowledgements from all the clients or after the configured timeout.
+However, in PASSIVE mode, the framework just notifies the clients about the state transition and conveys their acknowledgement status back to the Master application that triggered the transition.
+
+@subsection tcuactivity_manager_listener_callflow Call flow to register/remove listener for TCU-activity manager
+
+@anchor fig_tcuactivity_manager_listener_callflow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{tcuactivity_manager_listener_callflow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to register/remove listener for TCU-activity manager}
+  \label{fig_tcuactivity_manager_listener_callflow}
+\end{figure}
+@endlatexonly
+
+@html_image{tcuactivity_manager_listener_callflow.png,Call flow to register/remove listener for TCU-activity manager,80,80,Register/Remove listener for TCU-activity manager call flow}
+
+1. Application requests power factory for TCU-activity manager object, with clientType as SLAVE.
+2. Power factory returns ITcuActivityManager object using which application will register or remove a listener.
+3. Application can register a listener for getting notifications on TCU-activity state updates.
+4. Status of register listener i.e. either SUCCESS or FAILED will be returned to the application.
+5. Application will get TCU-activity state notifications like SUSPEND, RESUME and SHUTDOWN.
+6. Application will send one(despite multiple listeners) acknowledgement, after processing(save any required information) SUSPEND/SHUTDOWN notifications. This indicates the readiness of application for state-transition. However the TCU-activity management service doesn't wait for acknowledgement indefinitely, before performing the state transition.
+7. Application receives synchronous status which indicates if the acknowledgement was sent successfully.
+8. Application can remove listener.
+9. Status of remove listener i.e. either SUCCESS or FAILED will be returned to the application.
+
+@subsection tcuactivity_manager_commands_callflow_active_mode Call flow to set the TCU-activity state in ACTIVE mode
+
+@anchor fig_tcuactivity_manager_commands_callflow_active_mode
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{tcuactivity_manager_commands_callflow_active_mode.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to set the TCU-activity state in ACTIVE mode}
+  \label{fig_tcuactivity_manager_commands_callflow_active_mode}
+\end{figure}
+@endlatexonly
+
+@html_image{tcuactivity_manager_commands_callflow_active_mode.png,Call flow to set the TCU-activity state in ACTIVE mode,80,80,Call flow to set the TCU-activity state in ACTIVE mode}
+
+1. Application requests power factory for TCU-activity manager object, with clientType as MASTER.
+2. Power factory returns ITcuActivityManager object using which application will set the TCU-activity state.
+3. Application can register a listener for getting notifications on TCU-activity state.
+4. Status of register listener i.e. either SUCCESS or FAILED will be returned to the application
+5. Application can set the TCU-activity state to SUSPEND, RESUME or SHUTDOWN.
+6. Application receives synchronous status which indicates if the request was sent successfully.
+7. Optionally, the response to setActivityState request can be received by the application.
+8. Application waits for TCU-activity state update to confirm the state change.
+9. Application will send one(despite multiple listeners) acknowledgement, after processing(save any required information) SUSPEND/SHUTDOWN notifications. This indicates the readiness of application for state-transition. However the TCU-activity management service doesn't wait for acknowledgement indefinitely, before performing the state transition.
+10. Application receives synchronous status which indicates if the acknowledgement was sent successfully.
+11. Application can remove listener.
+12. Status of remove listener i.e. either SUCCESS or FAILED will be returned to the application.
+
+@subsection tcuactivity_manager_commands_callflow_passive_mode Call flow to set the TCU-activity state in PASSIVE mode
+
+@anchor fig_tcuactivity_manager_commands_callflow_passive_mode
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{tcuactivity_manager_commands_callflow_passive_mode.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Call flow to set the TCU-activity state in PASSIVE mode}
+  \label{fig_tcuactivity_manager_commands_callflow_passive_mode}
+\end{figure}
+@endlatexonly
+
+@html_image{tcuactivity_manager_commands_callflow_passive_mode.png,Call flow to set the TCU-activity state in PASSIVE mode,80,80,Call flow to set the TCU-activity state in PASSIVE mode}
+
+1. Application requests power factory for TCU-activity manager object, with clientType as MASTER.
+2. Power factory returns ITcuActivityManager object using which application will set the TCU-activity state.
+3. Application can register a listener for getting notifications on TCU-activity state.
+4. Status of register listener i.e. either SUCCESS or FAILED will be returned to the application
+5. Application can set the TCU-activity state to SUSPEND, RESUME or SHUTDOWN.
+6. Application receives synchronous status which indicates if the request was sent successfully.
+7. Optionally, the response to setActivityState request can be received by the application.
+8. Application waits for TCU-activity state update to confirm the state change.
+9. Application will send one(despite multiple listeners) acknowledgement, after processing(save any required information) SUSPEND/SHUTDOWN notifications. This indicates the readiness of application for state-transition. However the TCU-activity management service doesn't wait for acknowledgement indefinitely, before performing the state transition.
+10. Application receives synchronous status which indicates if the acknowledgement was sent successfully.
+11. Application waits for the acknowledgement status of all the clients, for the state transition in the system
+12. Application can remove listener.
+13. Status of remove listener i.e. either SUCCESS or FAILED will be returned to the application.
+
+@section remote_sim_call_flow Remote SIM call flow
+
+Application will get the remote SIM manager object from phone factory. The application must
+register a listener to receive commands/messages from the modem to send to the SIM. After sending
+the connection available message, a onCardConnect() notification tells the application to connect
+to the SIM and perform an Answer to Reset. After sending the card reset message (with the AtR
+bytes), APDU messages will begin to be sent/received.
+
+@anchor fig_remote_sim_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{remote_sim_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Remote SIM call flow}
+  \label{fig_remote_sim_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{remote_sim_call_flow.png,Remote SIM call flow,80,80,Remote SIM call flow}
+
+1. Application requests remote SIM manager object from phone factory, specifying a slot id.
+2. Phone factory returns IRemoteSimManager object.
+3. Application registers a listener to receive commands/messages from the modem to send to the SIM.
+4. Status of register listener i.e. either SUCCESS or FAILED will be returned to the application.
+5. Application sends a connection available message indicating that a SIM is available for use.
+6. Status of send connection available i.e. either SUCCESS or FAILED will be returned to the application.
+7. Optionally, the response to send connection available request can be received by the application.
+8. Application will receive a card connect notification by the listener.
+9. After the application successfully connects to the SIM and requests an AtR, it sends a card reset message with the AtR bytes.
+10. Status of send card reset i.e. either SUCCESS or FAILED will be returned to the application.
+11. Optionally, the response to send card reset request can be received by the application.
+12. Application will receive an APDU transfer notification by the listener (with APDU message id).
+13. After forwarding the APDU transfer to the SIM and receiving the response, application will send APDU response.
+14. Status of send APDU i.e. either SUCCESS or FAILED will be returned to the application.
+15. Optionally, the response to send APDU request can be received by the application.
+16. To close the connection, application will send connection unavailable message.
+17. Status of send connection unavailable i.e. either SUCCESS or FAILED will be returned to the application.
+18. Optionally, the response to send connection unavailable can be received by the application.
+
+@section modem_config_call_flow Modem Config Call Flow
+
+Modem Config manager provides APIs to request all configs from modem, load/delete modem config files
+from modem's storage, activate/deactivate a modem config file, get the active config details, set
+and get auto config selection mode. It also has listener interface for notifications for config
+activation update status. Application will get the Modem Config manager object from config factory.
+The application can register a listener for updates reagrding modem config activation.
+
+@subsection modem_config_load_and_activate_call_flow Call flow to load and activate a modem config file.
+
+@anchor fig_modem_config_load_and_activate_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{modem_config_load_and_activate_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Modem Config load and activate call flow}
+  \label{fig_modem_config_load_and_activate_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{modem_config_load_and_activate_call_flow.png,Modem Config load and activate call flow,80,80,Modem Config load and activate call flow}
+
+1. Application requests modem config manager object from config factory.
+2. Config factory returns IModemConfigManager object.
+3. Application sends a request to load config file in modem's storage.
+4. Application receives synchronous Status which indicates if the request to load config file was sent successfully.
+5. Application is notified of the Status of the loadConfigFile request (either SUCCESS or FAILED) via the application-supplied callback.
+6. Application sends a request to get list of all modem configs from modem's storage.
+7. Application receives synchronous Status which indicates if the request to get config list was sent successfully.
+8. Application is notified of the Status of the requestConfigList request (either SUCCESS or FAILED) via the application-supplied callback along with list of modem configs.
+9. Application sends a request to activate config file.
+10. Application receives synchronous Status which indicates if the request to activate config file was sent successfully.
+11. Application is notified of the Status of the activateConfig request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection deactivate_and_delete_modem_config_call_flow Call flow to deactivate and delete a modem config file.
+
+@anchor fig_deactivate_and_delete_modem_config_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{deactivate_and_delete_modem_config_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Modem Config deactivate and delete Call Flow}
+  \label{fig_deactivate_and_delete_modem_config_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{deactivate_and_delete_modem_config_call_flow.png,Modem Config deactivate and delete Call Flow,80,80,Modem Config deactivate and delete Call Flow}
+
+1. Application requests modem config manager object from config factory.
+2. Config factory returns IModemConfigManager object.
+3. Application sends a request to deactivate config file.
+4. Application receives synchronous Status which indicates if the request to deactivate config file was sent successfully.
+5. Application is notified of the Status of the deactivateConfig request (either SUCCESS or FAILED) via the application-supplied callback.
+6. Application sends a request to get list of all modem configs from modem's storage.
+7. Application receives synchronous Status which indicates if the request to get config list was sent successfully.
+8. Application is notified of the Status of the requestConfigList request (either SUCCESS or FAILED) via the application-supplied callback along with list of modem configs.
+9. Application sends a request to delete config file.
+10. Application receives synchronous Status which indicates if the request to delete config file was sent successfully.
+11. Application is notified of the Status of the deleteConfig request (either SUCCESS or FAILED) via the application-supplied callback.
+
+@subsection modem_config_set_and_get_auto_selection_mode_call_flow Call flow to set and get config auto selection mode
+
+@anchor fig_modem_config_set_and_get_auto_selection_mode_call_flow
+@latexonly
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{modem_config_set_and_get_auto_selection_mode_call_flow.png}
+  \renewcommand{\thefigure}{\thechapter-\arabic{figure}}
+  \caption{Modem Config get and set Auto Selection Mode Call Flow}
+  \label{fig_modem_config_set_and_get_auto_selection_mode_call_flow}
+\end{figure}
+@endlatexonly
+
+@html_image{modem_config_set_and_get_auto_selection_mode_call_flow.png,Modem Config get and set Auto Selection Mode Call Flow,80,80,Modem Config get and set Auto Selection Mode Call Flow}
+
+1. Application requests modem config manager object from config factory.
+2. Config factory returns IModemConfigManager object.
+3. Application sends a request to set config auto selection mode.
+4. Application receives synchronous Status which indicates if the request to set config auto selection mode was sent successfully.
+5. Application is notified of the Status of the request setAutoSelectionMode (either SUCCESS or FAILED) via the application-supplied callback.
+6. Application sends a request to get config auto selection mode.
+7. Application receives synchronous Status which indicates if the request to get config auto selection mode was sent successfully.
+8. Application is notified of the Status of the request setAutoSelectionMode (either SUCCESS or FAILED) via the application-supplied callback, along with mode and slot id.
+
+*/

@@ -1,0 +1,115 @@
+/*
+ *  Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are
+ *  met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *    * Neither the name of The Linux Foundation nor the names of its
+ *      contributors may be used to endorse or promote products derived
+ *      from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+ *  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ *  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+ *  ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+ *  BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ *  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ *  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ *  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ *  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*=============================================================================
+                             Edit History
+when       who     what, where, why
+--------   ---     ------------------------------------------------------------
+
+=============================================================================*/
+/**
+@page revision_history Revision History
+
+@latexonly
+{\LARGE\sf\textbf{Revision History}} \normalsize
+\vspace{.2cm} \sffamily
+\setcounter{page}{2}
+@endlatexonly
+
+@table{2,{\centering}p{0.63in},{\raggedright}p{5.38in}}
+@trfirsthdg
+@thmultcol{1,|c|} Date @thmultcolend @thmultcollast{1,c|} Description @thmultcollastend
+@trfirsthdgend
+@tblcapcont{Revision history (cont.)}
+@trhdg
+@thdg{1,c|,Date} @thdglast{1,c|,Description}
+@trhdgend
+@tr @td Sep 2017 @tdend @tdlast Initial release @tdlastend @trend
+@tr @td Dec 2017 @tdend @tdlast Added subscription APIs and section on Versioning and API Status @tdlastend @trend
+@tr @td Jun 2018 @tdend @tdlast Added Cellular Connection Management APIs @tdlastend @trend
+@tr @td Oct 2018 @tdend @tdlast Addition of Network Selection and Serving System Management APIs and call flows @tdlastend @trend
+@tr @td Nov 2018 @tdend @tdlast Addition of C-V2X APIs @tdlastend @trend
+@tr @td Jan 2019 @tdend @tdlast Addition of Audio APIs and call flows @tdlastend @trend
+@tr @td Mar 2019 @tdend @tdlast Addition of Thermal manager APIs and call flows @tdlastend @trend
+@tr @td May 2019 @tdend @tdlast Addition of TCU Activity Management APIs and call flows @tdlastend @trend
+@tr @td Jun 2019 @tdend @tdlast Addition of Audio APIs for play, capture, DTMF and related call flows @tdlastend @trend
+@tr @td Jul 2019 @tdend @tdlast Updated the Location APIs and call flows @tdlastend @trend
+@tr @td Jul 2019 @tdend @tdlast Addition of Thermal shutdown manager APIs and call flows @tdlastend @trend
+@tr @td Sep 2019 @tdend @tdlast Addition of Remote SIM APIs and call flows @tdlastend @trend
+@tr @td Sep 2019 @tdend @tdlast Addition of Audio APIs for Loopback, Tone Generator and related call flows @tdlastend @trend
+@tr @td Sep 2019 @tdend @tdlast Addition of Audio APIs for compressed audio format playback and related call flows @tdlastend @trend
+@tr @td Sep 2019 @tdend @tdlast Addition of modem config APIs and related call flows @tdlastend @trend
+@tr @td Oct 2019 @tdend @tdlast Addition of Data Filter APIs and call flows @tdlastend @trend
+@tr @td Oct 2019 @tdend @tdlast Addition of Location concurrent report APIs and call flows @tdlastend @trend
+@tr @td Oct 2019 @tdend @tdlast Addition of Location constraint time uncertainty APIs and call flows @tdlastend @trend
+@tr @td Nov 2019 @tdend @tdlast Addition of Audio Format Transcoding APIs and call flows @tdlastend @trend
+@tr @td Nov 2019 @tdend @tdlast Addition of Data Networking APIs and call flows @tdlastend @trend
+@tr @td Nov 2019 @tdend @tdlast Addition of Compressed audio format playback on voice paths APIs and call flows @tdlastend @trend
+@tr @td Jan 2020 @tdend @tdlast Addition of Data software bridge management APIs and call flows @tdlastend @trend
+@tr @td Jan 2020 @tdend @tdlast Addition of Socks Proxy to Data Networking APIs and call flows @tdlastend @trend
+@tr @td Feb 2020 @tdend @tdlast Addition of Location Configurator APIs and call flows @tdlastend @trend
+@tr @td Mar 2020 @tdend @tdlast Addition of Robust Location API in Location Configurator and call flows @tdlastend @trend
+@tr @td Apr 2020 @tdend @tdlast Addition of Security section with SE-linux interface documentation @tdlastend @trend
+@tr @td May 2020 @tdend @tdlast Addition of L2TP to Data Networking APIs and call flows @tdlastend @trend
+@tr @td May 2020 @tdend @tdlast Addition of Public Logging API @tdlastend @trend
+@tr @td Aug 2020 @tdend @tdlast Addition of Location Manager APIs, Location Configurator APIs and callflows @tdlastend @trend
+@tableend
+
+@latexonly \rm @endlatexonly
+
+@newpage
+@latexonly
+%Define headers/footers for rest of document.
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\sl\sffamily\footnotesize{\doctitleheader}}
+\fancyhead[R]{\sl\sffamily\footnotesize\firstleftmark}
+\fancyfoot[L]{\sffamily\footnotesize\dcn}
+%For Regular Distribution, comment out the next two lines
+\fancyfoot[C]{\sffamily\footnotesize \copyrighttext}
+\fancyfoot[R]{\sffamily\footnotesize\thepage \\ \begin{center}\sffamily\footnotesize\textbf \copyrightreserved \end{center}}
+%For Regular Distribution, uncomment the next two lines
+%\fancyfoot[C]{\sffamily\scriptsize\textbf{MAY CONTAIN U.S. AND INTERNATIONAL EXPORT CONTROLLED INFORMATION}}
+%\fancyfoot[R]{\sffamily\footnotesize\thepage }
+\renewcommand\footrulewidth{.2pt} %Adds a rule (line) to footer.
+
+\tocloftpagestyle{plain} %Sets the page style for the first page of the ToC. The "plain" style removes any previously defined headers/footers and only includes a page number in the footer.
+\bookmarktableofcontents %Generates a bookmark for the TOC.
+\textsf{\tableofcontents} %Generates the TOC on the second run.
+\pagestyle{fancy} %Redefines the page style to use the fancyhdr package to turn on the custom page style.
+\tocloftpagestyle{fancy}
+\bookmarklistoffigures %AD. LB 5/1/15. Generates a bookmark for the LOF.
+\newpage
+\listoffigures %Generates the LOF on the second run. If there are not figures, comment out this line.
+%\vspace{40pt}%AD. LB 5/1/15. Space prior to List of Tables. Comment out this line if there is no LOF.
+%\bookmarklistoftables %Generates the LOT on the second run. If there are no tables, comment out this line.
+%\listoftables %Generates the LOT on the second run. If there are no tables, comment out this line.
+@endlatexonly
+
+*/

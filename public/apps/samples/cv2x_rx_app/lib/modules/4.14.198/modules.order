@@ -1,0 +1,8 @@
+kernel/fs/efivarfs/efivarfs.ko
+kernel/drivers/usb/serial/usbserial.ko
+kernel/drivers/usb/serial/ftdi_sio.ko
+kernel/drivers/usb/serial/option.ko
+kernel/drivers/usb/serial/usb_wwan.ko
+kernel/drivers/input/evbug.ko
+kernel/drivers/mmc/core/mmc_test.ko
+kernel/net/bridge/br_netfilter.ko

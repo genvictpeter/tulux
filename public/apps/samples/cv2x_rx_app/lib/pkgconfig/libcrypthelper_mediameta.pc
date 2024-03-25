@@ -1,0 +1,10 @@
+prefix=/usr
+exec_prefix=/usr
+libdir=/usr/lib
+includedir=/usr/include
+
+Name: libcrypthelper_mediameta
+Description: helper crypthelper_mediameta library
+Version: 1.0.0
+Libs: -L${libdir} -lcrypthelper_mediameta
+Cflags: -I${includedir}/crypthelper_mediameta

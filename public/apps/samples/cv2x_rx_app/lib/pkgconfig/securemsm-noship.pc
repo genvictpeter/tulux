@@ -1,0 +1,11 @@
+prefix=/usr
+exec_prefix=/usr
+libdir=/usr/lib
+includedir=/usr/include
+
+Name: securemsm-noship
+Description: securemsm-noship library
+Version: 1.0.0
+Libs: -L${libdir}  -lQseeComApi -lrpmb -lssd -ldrmfs -lion -lqcbor -ltzcom \
+      -llmclient -lcontentcopy -lcpion -lKeyMaster
+Cflags: -I${includedir}/securemsm-noship
